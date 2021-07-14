@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 
 import './App.css';
-import king from './king.png';
+import King from './components/Pieces/King';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -10,17 +10,10 @@ function App() {
   const [left, setLeft] = useState(window.screen.width / 2.15);
   const [top, setTop] = useState(window.screen.height / 2.6);
 
-  console.log(window);
-
   const boxRef = useRef();
 
-  const downHandler = (e) => {
-    setBox(
-      'box-coords: ' +
-        boxRef.current.getBoundingClientRect().left +
-        ' ' +
-        boxRef.current.getBoundingClientRect().top
-    );
+  const downHandler = (size) => {
+    setBox(size);
     setHold(true);
   };
 
@@ -28,8 +21,8 @@ function App() {
     setCount('coords: ' + e.clientX + ' ' + e.clientY);
 
     if (hold) {
-      setLeft(e.clientX - boxRef.current.offsetWidth / 2);
-      setTop(e.clientY - boxRef.current.offsetHeight / 2);
+      setLeft(e.clientX - box / 2);
+      setTop(e.clientY - box / 2);
     }
   };
 
@@ -37,22 +30,64 @@ function App() {
     setHold(false);
   };
 
+  const createSquares = () => {
+    let arr = [];
+
+    for (let k = 0; k < 8; k++) {
+      for (let i = 0; i < 8; i++) {
+        if (k % 2 === 0) {
+          if (i % 2 === 0) {
+            arr.push(<div className='square light'></div>);
+          } else {
+            arr.push(<div className='square dark'></div>);
+          }
+        } else {
+          if (i % 2 !== 0) {
+            arr.push(<div className='square light'></div>);
+          } else {
+            arr.push(<div className='square dark'></div>);
+          }
+        }
+      }
+    }
+    return arr;
+  };
+
   return (
     <div onMouseMove={moveHandler} onMouseUp={upHandler} className='App'>
       <h1 className='noselect'>{count}</h1>
-      <h1 className='noselect'>{box}</h1>
-      <h1 className='noselect'>{hold ? 'true' : 'false'}</h1>
-      <div
-        style={{
-          cursor: hold ? 'grabbing' : 'grab',
-          left: left + 'px',
-          top: top + 'px',
-        }}
+      {/* <h1 className='noselect'>{hold ? 'true' : 'false'}</h1> */}
+      <King
+        hold={hold}
+        left={left}
+        top={top}
         ref={boxRef}
-        onMouseDown={downHandler}
-        className='box'
-      >
-        <img draggable='false' src={king} alt='' />
+        onClickDown={downHandler}
+      />
+      <div className='board-container'>
+        <div className='upper-coords'>
+          <p>A</p>
+          <p>B</p>
+          <p>C</p>
+          <p>D</p>
+          <p>E</p>
+          <p>F</p>
+          <p>G</p>
+          <p>H</p>
+        </div>
+        <div className='inner-container'>
+          <div className='side-coords'>
+            <p>A</p>
+            <p>B</p>
+            <p>C</p>
+            <p>D</p>
+            <p>E</p>
+            <p>F</p>
+            <p>G</p>
+            <p>H</p>
+          </div>
+          <div className='board'>{createSquares()}</div>
+        </div>
       </div>
     </div>
   );
