@@ -1,0 +1,10 @@
+.piece {
+  width: 3.5rem;
+  height: 3.5rem;
+  position: absolute;
+  z-index: 2000;
+}
+
+.piece img {
+  width: 100%;
+}

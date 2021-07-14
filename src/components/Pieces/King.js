@@ -1,10 +1,11 @@
 import { useRef } from 'react';
 import king from './../../king.png';
+import './Pieces.css';
 
 const King = (props) => {
   const pieceRef = useRef();
 
-  const clickDownHandler = () => {
+  const clickDownHandler = (e) => {
     props.onClickDown(pieceRef.current.offsetWidth);
     // props.sendSize(useRef.current.offsetWidth);
   };
@@ -18,7 +19,7 @@ const King = (props) => {
       }}
       ref={pieceRef}
       onMouseDown={clickDownHandler}
-      className='box'
+      className='piece'
     >
       <img draggable='false' src={king} alt='' />
     </div>

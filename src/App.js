@@ -10,7 +10,7 @@ function App() {
   const [left, setLeft] = useState(window.screen.width / 2.15);
   const [top, setTop] = useState(window.screen.height / 2.6);
 
-  const boxRef = useRef();
+  const boardRef = useRef();
 
   const downHandler = (size) => {
     setBox(size);
@@ -27,7 +27,27 @@ function App() {
   };
 
   const upHandler = (e) => {
+    if (!hold) return;
+
     setHold(false);
+
+    const squaresArr = Array.from(boardRef.current.children);
+
+    squaresArr.forEach((square) => {
+      const { left, width, height, top } = square.getBoundingClientRect();
+
+      if (left < e.clientX && left + width > e.clientX) {
+        if (top < e.clientY && top + height > e.clientY) {
+          if (square.className.includes('dark')) {
+            square.style.backgroundColor = 'rgba(85, 235, 52, 0.9)';
+          } else {
+            square.style.backgroundColor = 'rgba(85, 235, 52, 0.45)';
+          }
+        }
+      }
+    });
+
+    // console.log(boardRef.current.children[0].getBoundingClientRect());
   };
 
   const createSquares = () => {
@@ -57,15 +77,9 @@ function App() {
     <div onMouseMove={moveHandler} onMouseUp={upHandler} className='App'>
       <h1 className='noselect'>{count}</h1>
       {/* <h1 className='noselect'>{hold ? 'true' : 'false'}</h1> */}
-      <King
-        hold={hold}
-        left={left}
-        top={top}
-        ref={boxRef}
-        onClickDown={downHandler}
-      />
+      <King hold={hold} left={left} top={top} onClickDown={downHandler} />
       <div className='board-container'>
-        <div className='upper-coords'>
+        <div style={{ flexDirection: 'row' }} className='upper-coords'>
           <p>A</p>
           <p>B</p>
           <p>C</p>
@@ -76,17 +90,22 @@ function App() {
           <p>H</p>
         </div>
         <div className='inner-container'>
-          <div className='side-coords'>
-            <p>A</p>
-            <p>B</p>
-            <p>C</p>
-            <p>D</p>
-            <p>E</p>
-            <p>F</p>
-            <p>G</p>
-            <p>H</p>
+          <div
+            style={{ flexDirection: 'column-reverse' }}
+            className='side-coords'
+          >
+            <p>1</p>
+            <p>2</p>
+            <p>3</p>
+            <p>4</p>
+            <p>5</p>
+            <p>6</p>
+            <p>7</p>
+            <p>8</p>
           </div>
-          <div className='board'>{createSquares()}</div>
+          <div ref={boardRef} className='board'>
+            {createSquares()}
+          </div>
         </div>
       </div>
     </div>
