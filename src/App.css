@@ -37,6 +37,12 @@
   }
 }
 
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
   background-color: #282c34;
   overflow: hidden;
@@ -133,15 +139,13 @@ body {
 
 .square:hover {
   border: 3px solid rgb(247, 247, 247);
-  width: calc(12.5% - 6px);
-  height: calc(12.5% - 6px);
 }
 
 .dark {
   background-color: rgba(0, 0, 0, 0.472);
 }
 
-.noselect {
+.board-container * {
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none; /* Safari */
   -khtml-user-select: none; /* Konqueror HTML */

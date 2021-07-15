@@ -6,7 +6,7 @@ const King = (props) => {
   const pieceRef = useRef();
 
   const clickDownHandler = (e) => {
-    props.onClickDown(pieceRef.current.offsetWidth);
+    props.onClickDown(pieceRef.current.offsetWidth, e, 'king');
     // props.sendSize(useRef.current.offsetWidth);
   };
 
