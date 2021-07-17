@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import king from './../../king.png';
+import king from './../../whiteKing.svg';
 import './Pieces.css';
 
 const King = (props) => {

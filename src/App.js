@@ -11,12 +11,12 @@ function App() {
   const [top, setTop] = useState(window.screen.height / 2.6);
   const [initial, setInitial] = useState([0, 0]);
   const [final, setFinal] = useState([0, 0]);
-  const [piece, setPiece] = useState('none');
+  const [piece, setPiece] = useState({});
 
   const boardRef = useRef();
 
   const checkMoves = (curPosition) => {
-    if (piece === 'king') {
+    if (piece.name === 'king') {
       let movesArr = [];
 
       for (let y = curPosition[0] - 1; y <= curPosition[0] + 1; y++) {
@@ -28,11 +28,12 @@ function App() {
             isEqual = true;
           }
 
-          if (y >= 1 && x >= 1 && !isEqual) movesArr.push(possible);
+          if (y >= 1 && y <= 8 && x >= 1 && x <= 8 && !isEqual)
+            movesArr.push(possible);
         }
       }
 
-      console.log(movesArr);
+      return movesArr;
 
       // for (let y = 1; y <= 8; y++) {
       //   for (let x = 1; x <= 8; x++) {
@@ -78,7 +79,7 @@ function App() {
 
     const index = squaresArr.findIndex((el) => el === element) + 1;
 
-    const curPosition = [Math.ceil(index / 8), index % 8];
+    const curPosition = [Math.ceil(index / 8), index % 8 || 8];
 
     if (moment) {
       setFinal(curPosition);
@@ -95,8 +96,10 @@ function App() {
 
     const square = getSquare(e);
     const coords = getCoords(square, 0);
-    checkMoves(coords);
-    setPiece(curPiece);
+    setPiece({
+      name: curPiece,
+      legalMoves: checkMoves(coords),
+    });
   };
 
   const moveHandler = (e) => {
@@ -108,12 +111,31 @@ function App() {
 
       const square = getSquare(e);
       const coords = getCoords(square, 1);
-      // checkMoves(coords);
+      setPiece({
+        name: piece.name,
+        legalMoves: checkMoves(initial),
+      });
     }
   };
 
   const upHandler = (e) => {
     if (!hold) return;
+
+    // console.log(piece.legalMoves);
+    // console.log(final);
+    // console.log(
+    //   piece.legalMoves.findIndex((legalMove) => {
+    //     return legalMove[0] === final[0] && legalMove[1] === final[1];
+    //   })
+    // );
+
+    const legalIndex = piece.legalMoves.findIndex((legalMove) => {
+      return legalMove[0] === final[0] && legalMove[1] === final[1];
+    });
+
+    if (legalIndex === -1) {
+      alert('errrrrrou');
+    }
 
     setHold(false);
   };
@@ -145,8 +167,9 @@ function App() {
     <div onMouseMove={moveHandler} onMouseUp={upHandler} className='App'>
       <h1 className='noselect'>{count}</h1>
       <h3>
-        piece: {piece} initial: {`${initial[0]}, ${initial[1]}`} final:{' '}
-        {`${final[0]}, ${final[1]}`}
+        piece: {piece.name || 'none'} initial: {`${initial[0]}, ${initial[1]}`}
+        {' - '}
+        legalMoves: {piece.legalMoves} final: {`${final[0]}, ${final[1]}`}
       </h3>
       {/* <h1 className='noselect'>{hold ? 'true' : 'false'}</h1> */}
       <King hold={hold} left={left} top={top} onClickDown={downHandler} />
