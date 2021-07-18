@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 
 import './App.css';
 import King from './components/Pieces/King';
+import moveSfx from './moveSfx.wav';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -16,6 +17,7 @@ function App() {
 
   const boardRef = useRef();
   const piecesRef = useRef();
+  const moveSoundRef = useRef();
 
   useEffect(() => {
     window.onload = () => {
@@ -190,6 +192,9 @@ function App() {
       return;
     }
 
+    moveSoundRef.current.playbackRate = 3.5;
+    moveSoundRef.current.play();
+
     const square = getSquare(e);
 
     makeMove(square, e.target);
@@ -242,6 +247,7 @@ function App() {
 
   return (
     <div onMouseMove={moveHandler} onMouseUp={upHandler} className='App'>
+      <audio ref={moveSoundRef} src={moveSfx}></audio>
       <h1 className='noselect'>{count}</h1>
       <h3>
         piece: {piece.name || 'none'} initial:{' '}
