@@ -7,15 +7,43 @@ function App() {
   const [count, setCount] = useState(0);
   const [box, setBox] = useState(0);
   const [hold, setHold] = useState(false);
-  const [left, setLeft] = useState(window.screen.width / 2.15);
+  const [left, setLeft] = useState(0);
   const [top, setTop] = useState(window.screen.height / 2.6);
-  const [initial, setInitial] = useState([0, 0]);
+  const [initial, setInitial] = useState({});
   const [final, setFinal] = useState([0, 0]);
   const [piece, setPiece] = useState({});
+  const [material, setMaterial] = useState([]);
 
   const boardRef = useRef();
+  const piecesRef = useRef();
 
-  const checkMoves = (curPosition) => {
+  useEffect(() => {
+    window.onload = () => {
+      const pieces = [...piecesRef.current.children];
+      pieces.forEach((piece) => {
+        if (piece.className.includes('king')) {
+          const square = boardRef.current.children[60];
+          const { left: squareLeft, top: squareTop } =
+            square.getBoundingClientRect();
+          piece.style.left = squareLeft + 'px';
+          piece.style.top = squareTop + 'px';
+          piece.style.opacity = 1;
+        }
+      });
+    };
+  });
+
+  const displayHint = (legalMoves, show) => {
+    legalMoves
+      .map((move) => {
+        return move[0] * 8 - (8 - [move[1]]) - 1;
+      })
+      .forEach((index) => {
+        boardRef.current.children[index].children[0].style.opacity = show;
+      });
+  };
+
+  const checkMoves = (curPosition, event) => {
     if (piece.name === 'king') {
       let movesArr = [];
 
@@ -84,7 +112,10 @@ function App() {
     if (moment) {
       setFinal(curPosition);
     } else {
-      setInitial(curPosition);
+      setInitial({
+        position: curPosition,
+        square: element,
+      });
     }
 
     return curPosition;
@@ -96,9 +127,11 @@ function App() {
 
     const square = getSquare(e);
     const coords = getCoords(square, 0);
+    const legalMoves = checkMoves(coords, 'mousedown');
+
     setPiece({
       name: curPiece,
-      legalMoves: checkMoves(coords),
+      legalMoves,
     });
   };
 
@@ -109,17 +142,36 @@ function App() {
       setLeft(e.clientX - box / 2);
       setTop(e.clientY - box / 2);
 
+      if (piece.legalMoves) displayHint(piece.legalMoves, 1);
+
       const square = getSquare(e);
-      const coords = getCoords(square, 1);
+      getCoords(square, 1);
       setPiece({
         name: piece.name,
-        legalMoves: checkMoves(initial),
+        legalMoves: checkMoves(initial.position, 'mousemove'),
       });
     }
   };
 
+  const makeMove = (finalSquare, targetPiece) => {
+    const { left, top } = finalSquare.getBoundingClientRect();
+    const animationTime = 110;
+
+    targetPiece.parentNode.style.transition = 'all ' + animationTime + 'ms';
+
+    setTimeout(() => {
+      targetPiece.parentNode.style.transition = 'none';
+    }, animationTime);
+
+    targetPiece.parentNode.style.left = left + 'px';
+    targetPiece.parentNode.style.top = top + 'px';
+  };
+
   const upHandler = (e) => {
     if (!hold) return;
+    setHold(false);
+
+    displayHint(piece.legalMoves, 0);
 
     // console.log(piece.legalMoves);
     // console.log(final);
@@ -134,10 +186,19 @@ function App() {
     });
 
     if (legalIndex === -1) {
-      alert('errrrrrou');
+      makeMove(initial.square, e.target);
+      return;
     }
 
-    setHold(false);
+    const square = getSquare(e);
+
+    makeMove(square, e.target);
+
+    const coords = getCoords(square, 0);
+    setPiece({
+      name: piece.name,
+      legalMoves: checkMoves(coords),
+    });
   };
 
   const createSquares = () => {
@@ -147,15 +208,31 @@ function App() {
       for (let i = 0; i < 8; i++) {
         if (k % 2 === 0) {
           if (i % 2 === 0) {
-            arr.push(<div key={k + 1.22 * i} className='square light'></div>);
+            arr.push(
+              <div key={k + 1.22 * i} className='square light'>
+                <div className='dot'></div>
+              </div>
+            );
           } else {
-            arr.push(<div key={k + 3.11 * i} className='square dark'></div>);
+            arr.push(
+              <div key={k + 3.11 * i} className='square dark'>
+                <div className='dot'></div>
+              </div>
+            );
           }
         } else {
           if (i % 2 !== 0) {
-            arr.push(<div key={k + 3.633 * i} className='square light'></div>);
+            arr.push(
+              <div key={k + 3.633 * i} className='square light'>
+                <div className='dot'></div>
+              </div>
+            );
           } else {
-            arr.push(<div key={k + 3.33 * i} className='square dark'></div>);
+            arr.push(
+              <div key={k + 3.33 * i} className='square dark'>
+                <div className='dot'></div>
+              </div>
+            );
           }
         }
       }
@@ -167,12 +244,12 @@ function App() {
     <div onMouseMove={moveHandler} onMouseUp={upHandler} className='App'>
       <h1 className='noselect'>{count}</h1>
       <h3>
-        piece: {piece.name || 'none'} initial: {`${initial[0]}, ${initial[1]}`}
+        piece: {piece.name || 'none'} initial:{' '}
+        {/* {`${initial.position[0] || 'none'}, ${initial.position[1] || 'none'}`} */}
         {' - '}
         legalMoves: {piece.legalMoves} final: {`${final[0]}, ${final[1]}`}
       </h3>
       {/* <h1 className='noselect'>{hold ? 'true' : 'false'}</h1> */}
-      <King hold={hold} left={left} top={top} onClickDown={downHandler} />
       <div className='board-container'>
         <div style={{ flexDirection: 'row' }} className='upper-coords'>
           <p>A</p>
@@ -202,6 +279,9 @@ function App() {
             {createSquares()}
           </div>
         </div>
+      </div>
+      <div ref={piecesRef}>
+        <King hold={hold} left={left} top={top} onClickDown={downHandler} />
       </div>
     </div>
   );

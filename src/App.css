@@ -68,11 +68,16 @@ body {
   width: 100%;
 } */
 
+body {
+  color: #61dafb;
+}
+
 .board-container {
   padding: 1rem;
   background-color: crimson;
   width: fit-content;
   margin: 0 auto;
+  color: rgba(1, 1, 1, 0.8);
 }
 
 .upper-coords,
@@ -135,6 +140,17 @@ body {
 .square {
   width: 12.5%;
   height: 12.5%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dot {
+  background-color: rgba(1, 1, 1, 0.082);
+  width: 30%;
+  height: 30%;
+  border-radius: 100%;
+  opacity: 0;
 }
 
 .square:hover {

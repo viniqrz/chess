@@ -19,7 +19,7 @@ const King = (props) => {
       }}
       ref={pieceRef}
       onMouseDown={clickDownHandler}
-      className='piece'
+      className='piece king noselect'
     >
       <img draggable='false' src={king} alt='' />
     </div>
