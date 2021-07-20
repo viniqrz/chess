@@ -1,12 +1,13 @@
 import { useRef } from 'react';
-import king from './../../whiteKing.svg';
+import whiteKing from './../../whiteKing.svg';
+import blackKing from './../../blackKing.svg';
 import './Pieces.css';
 
 const King = (props) => {
   const pieceRef = useRef();
 
   const clickDownHandler = (e) => {
-    props.onClickDown(pieceRef.current.offsetWidth, e, 'king');
+    props.onClickDown(pieceRef.current.offsetWidth, e, `${props.side}King`);
     // props.sendSize(useRef.current.offsetWidth);
   };
 
@@ -19,9 +20,13 @@ const King = (props) => {
       }}
       ref={pieceRef}
       onMouseDown={clickDownHandler}
-      className='piece king noselect'
+      className={`piece ${props.side}King noselect`}
     >
-      <img draggable='false' src={king} alt='' />
+      <img
+        draggable='false'
+        src={props.side === 'white' ? whiteKing : blackKing}
+        alt=''
+      />
     </div>
   );
 };

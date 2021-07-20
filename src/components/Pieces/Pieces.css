@@ -1,11 +1,13 @@
 .piece {
-  width: 3.5rem;
-  height: 3.5rem;
+  width: calc((31rem - 1rem) * 0.125);
+  height: calc(30rem * 0.125);
   position: absolute;
-  z-index: 2000;
+  z-index: 1;
   opacity: 0;
+  /* background-color: blue; */
 }
 
 .piece img {
   width: 100%;
+  height: 100%;
 }

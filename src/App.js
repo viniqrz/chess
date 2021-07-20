@@ -8,22 +8,21 @@ function App() {
   const [count, setCount] = useState(0);
   const [box, setBox] = useState(0);
   const [hold, setHold] = useState(false);
-  const [left, setLeft] = useState(0);
-  const [top, setTop] = useState(window.screen.height / 2.6);
+  const [left, setLeft] = useState({});
+  const [top, setTop] = useState({});
   const [initial, setInitial] = useState({});
   const [final, setFinal] = useState([0, 0]);
   const [piece, setPiece] = useState({});
-  const [material, setMaterial] = useState([]);
 
   const boardRef = useRef();
   const piecesRef = useRef();
   const moveSoundRef = useRef();
 
   useEffect(() => {
-    window.onload = () => {
+    const arrangePieces = () => {
       const pieces = [...piecesRef.current.children];
       pieces.forEach((piece) => {
-        if (piece.className.includes('king')) {
+        if (piece.className.includes('whiteKing')) {
           const square = boardRef.current.children[60];
           const { left: squareLeft, top: squareTop } =
             square.getBoundingClientRect();
@@ -31,7 +30,22 @@ function App() {
           piece.style.top = squareTop + 'px';
           piece.style.opacity = 1;
         }
+
+        if (piece.className.includes('blackKing')) {
+          const square = boardRef.current.children[4];
+          const { left: squareLeft, top: squareTop } =
+            square.getBoundingClientRect();
+          piece.style.left = squareLeft + 'px';
+          piece.style.top = squareTop + 'px';
+          piece.style.opacity = 1;
+        }
       });
+    };
+
+    window.onload = () => {
+      arrangePieces();
+
+      window.addEventListener('resize', arrangePieces);
     };
   });
 
@@ -45,8 +59,8 @@ function App() {
       });
   };
 
-  const checkMoves = (curPosition, event) => {
-    if (piece.name === 'king') {
+  const checkMoves = (curPiece, curPosition) => {
+    if (curPiece.includes('King')) {
       let movesArr = [];
 
       for (let y = curPosition[0] - 1; y <= curPosition[0] + 1; y++) {
@@ -58,8 +72,9 @@ function App() {
             isEqual = true;
           }
 
-          if (y >= 1 && y <= 8 && x >= 1 && x <= 8 && !isEqual)
+          if (y >= 1 && y <= 8 && x >= 1 && x <= 8 && !isEqual) {
             movesArr.push(possible);
+          }
         }
       }
 
@@ -90,12 +105,6 @@ function App() {
 
       if (left < e.clientX && left + width > e.clientX) {
         if (top < e.clientY && top + height > e.clientY) {
-          if (square.className.includes('dark')) {
-            // square.style.backgroundColor = 'rgba(85, 235, 52, 0.9)';
-          } else {
-            // square.style.backgroundColor = 'rgba(85, 235, 52, 0.45)';
-          }
-
           element = square;
         }
       }
@@ -129,7 +138,7 @@ function App() {
 
     const square = getSquare(e);
     const coords = getCoords(square, 0);
-    const legalMoves = checkMoves(coords, 'mousedown');
+    const legalMoves = checkMoves(curPiece, coords);
 
     setPiece({
       name: curPiece,
@@ -141,8 +150,18 @@ function App() {
     setCount('coords: ' + e.clientX + ' ' + e.clientY);
 
     if (hold) {
-      setLeft(e.clientX - box / 2);
-      setTop(e.clientY - box / 2);
+      const objLeft = {};
+      const objTop = {};
+
+      objLeft[piece.name] = e.clientX - box / 2;
+      objTop[piece.name] = e.clientY - box / 2;
+
+      if (e.target.parentNode.className.includes(piece.name)) {
+        e.target.parentNode.style.zIndex = 2;
+      }
+
+      setLeft(objLeft);
+      setTop(objTop);
 
       if (piece.legalMoves) displayHint(piece.legalMoves, 1);
 
@@ -150,9 +169,26 @@ function App() {
       getCoords(square, 1);
       setPiece({
         name: piece.name,
-        legalMoves: checkMoves(initial.position, 'mousemove'),
+        legalMoves: checkMoves(piece.name, initial.position),
       });
     }
+  };
+
+  const takePiece = (square) => {
+    const { left, top } = square.getBoundingClientRect();
+
+    const pieces = [...piecesRef.current.children];
+
+    pieces.forEach((el) => {
+      const { left: elLeft, top: elTop } = el.getBoundingClientRect();
+      if (
+        elLeft === left &&
+        elTop === top &&
+        !el.className.includes(piece.name)
+      ) {
+        el.style.display = 'none';
+      }
+    });
   };
 
   const makeMove = (finalSquare, targetPiece) => {
@@ -165,6 +201,8 @@ function App() {
       targetPiece.parentNode.style.transition = 'none';
     }, animationTime);
 
+    takePiece(finalSquare);
+
     targetPiece.parentNode.style.left = left + 'px';
     targetPiece.parentNode.style.top = top + 'px';
   };
@@ -173,15 +211,9 @@ function App() {
     if (!hold) return;
     setHold(false);
 
-    displayHint(piece.legalMoves, 0);
+    e.target.parentNode.style.zIndex = 1;
 
-    // console.log(piece.legalMoves);
-    // console.log(final);
-    // console.log(
-    //   piece.legalMoves.findIndex((legalMove) => {
-    //     return legalMove[0] === final[0] && legalMove[1] === final[1];
-    //   })
-    // );
+    displayHint(piece.legalMoves, 0);
 
     const legalIndex = piece.legalMoves.findIndex((legalMove) => {
       return legalMove[0] === final[0] && legalMove[1] === final[1];
@@ -250,12 +282,9 @@ function App() {
       <audio ref={moveSoundRef} src={moveSfx}></audio>
       <h1 className='noselect'>{count}</h1>
       <h3>
-        piece: {piece.name || 'none'} initial:{' '}
-        {/* {`${initial.position[0] || 'none'}, ${initial.position[1] || 'none'}`} */}
-        {' - '}
-        legalMoves: {piece.legalMoves} final: {`${final[0]}, ${final[1]}`}
+        piece: {piece.name || 'none'} initial: legalMoves: {piece.legalMoves}{' '}
+        final: {`${final[0]}, ${final[1]}`}
       </h3>
-      {/* <h1 className='noselect'>{hold ? 'true' : 'false'}</h1> */}
       <div className='board-container'>
         <div style={{ flexDirection: 'row' }} className='upper-coords'>
           <p>A</p>
@@ -287,7 +316,20 @@ function App() {
         </div>
       </div>
       <div ref={piecesRef}>
-        <King hold={hold} left={left} top={top} onClickDown={downHandler} />
+        <King
+          side='white'
+          hold={hold}
+          left={left.whiteKing}
+          top={top.whiteKing}
+          onClickDown={downHandler}
+        />
+        <King
+          side='black'
+          hold={hold}
+          left={left.blackKing}
+          top={top.blackKing}
+          onClickDown={downHandler}
+        />
       </div>
     </div>
   );
