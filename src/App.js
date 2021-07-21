@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import './App.css';
 import King from './components/Pieces/King';
 import Queen from './components/Pieces/Queen';
+import Bishop from './components/Pieces/Bishop';
 import moveSfx from './moveSfx.wav';
 
 function App() {
@@ -22,6 +23,8 @@ function App() {
   useEffect(() => {
     const arrangePieces = () => {
       const pieces = [...piecesRef.current.children];
+      let whiteBishopCount = 0;
+      let blackBishopCount = 0;
       pieces.forEach((piece) => {
         if (piece.className.includes('whiteKing')) {
           const square = boardRef.current.children[60];
@@ -57,6 +60,26 @@ function App() {
           piece.style.left = squareLeft + 'px';
           piece.style.top = squareTop + 'px';
           piece.style.opacity = 1;
+        }
+
+        if (piece.className.includes('whiteBishop')) {
+          const square = boardRef.current.children[whiteBishopCount ? 58 : 61];
+          const { left: squareLeft, top: squareTop } =
+            square.getBoundingClientRect();
+          piece.style.left = squareLeft + 'px';
+          piece.style.top = squareTop + 'px';
+          piece.style.opacity = 1;
+          whiteBishopCount += 1;
+        }
+
+        if (piece.className.includes('blackBishop')) {
+          const square = boardRef.current.children[blackBishopCount ? 2 : 5];
+          const { left: squareLeft, top: squareTop } =
+            square.getBoundingClientRect();
+          piece.style.left = squareLeft + 'px';
+          piece.style.top = squareTop + 'px';
+          piece.style.opacity = 1;
+          blackBishopCount += 1;
         }
       });
     };
@@ -164,6 +187,47 @@ function App() {
       for (let x = curPosition[1] - 1; x > 0; x--) {
         const possible = [y, x];
         movesArr.push(possible);
+      }
+
+      return movesArr;
+    }
+
+    if (curPiece.includes('Bishop')) {
+      let x, y;
+      // DIAG -45deg
+      y = curPosition[0] - 1;
+      for (let x = curPosition[1] - 1; x > 0; x--) {
+        if (y < 1) break;
+        const possible = [y, x];
+        movesArr.push(possible);
+        y -= 1;
+      }
+
+      // DIAG +45deg
+      y = curPosition[0] - 1;
+      for (let x = curPosition[1] + 1; x <= 8; x++) {
+        if (y < 1) break;
+        const possible = [y, x];
+        movesArr.push(possible);
+        y -= 1;
+      }
+
+      // DIAG +135deg
+      y = curPosition[0] + 1;
+      for (let x = curPosition[1] + 1; x <= 8; x++) {
+        if (y > 8) break;
+        const possible = [y, x];
+        movesArr.push(possible);
+        y += 1;
+      }
+
+      // DIAG +225deg
+      y = curPosition[0] + 1;
+      for (let x = curPosition[1] - 1; x > 0; x--) {
+        if (y > 8) break;
+        const possible = [y, x];
+        movesArr.push(possible);
+        y += 1;
       }
 
       return movesArr;
@@ -307,8 +371,11 @@ function App() {
       const { left, top } = finalSquare.getBoundingClientRect();
       targetPiece.parentNode.style.left = left + 'px';
       targetPiece.parentNode.style.top = top + 'px';
-      moveSoundRef.current.playbackRate = 3.5;
-      moveSoundRef.current.play();
+
+      if (finalSquare !== initial.square) {
+        moveSoundRef.current.playbackRate = 3;
+        moveSoundRef.current.play();
+      }
     }
   };
 
@@ -441,12 +508,43 @@ function App() {
           top={top.blackQueen}
           onClickDown={downHandler}
         />
-
         <Queen
           side='white'
           hold={hold}
           left={left.whiteQueen}
           top={top.whiteQueen}
+          onClickDown={downHandler}
+        />
+        <Bishop
+          side='black'
+          hold={hold}
+          left={left.blackBishop0}
+          top={top.blackBishop0}
+          index={0}
+          onClickDown={downHandler}
+        />
+        <Bishop
+          side='black'
+          hold={hold}
+          left={left.blackBishop1}
+          top={top.blackBishop1}
+          index={1}
+          onClickDown={downHandler}
+        />
+        <Bishop
+          side='white'
+          hold={hold}
+          left={left.whiteBishop0}
+          top={top.whiteBishop0}
+          index={0}
+          onClickDown={downHandler}
+        />
+        <Bishop
+          side='white'
+          hold={hold}
+          left={left.whiteBishop1}
+          top={top.whiteBishop1}
+          index={1}
           onClickDown={downHandler}
         />
       </div>
