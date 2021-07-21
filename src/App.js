@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 
 import './App.css';
 import King from './components/Pieces/King';
+import Queen from './components/Pieces/Queen';
 import moveSfx from './moveSfx.wav';
 
 function App() {
@@ -39,6 +40,24 @@ function App() {
           piece.style.top = squareTop + 'px';
           piece.style.opacity = 1;
         }
+
+        if (piece.className.includes('whiteQueen')) {
+          const square = boardRef.current.children[59];
+          const { left: squareLeft, top: squareTop } =
+            square.getBoundingClientRect();
+          piece.style.left = squareLeft + 'px';
+          piece.style.top = squareTop + 'px';
+          piece.style.opacity = 1;
+        }
+
+        if (piece.className.includes('blackQueen')) {
+          const square = boardRef.current.children[3];
+          const { left: squareLeft, top: squareTop } =
+            square.getBoundingClientRect();
+          piece.style.left = squareLeft + 'px';
+          piece.style.top = squareTop + 'px';
+          piece.style.opacity = 1;
+        }
       });
     };
 
@@ -60,9 +79,9 @@ function App() {
   };
 
   const checkMoves = (curPiece, curPosition) => {
-    if (curPiece.includes('King')) {
-      let movesArr = [];
+    let movesArr = [];
 
+    if (curPiece.includes('King')) {
       for (let y = curPosition[0] - 1; y <= curPosition[0] + 1; y++) {
         for (let x = curPosition[1] - 1; x <= curPosition[1] + 1; x++) {
           const possible = [y, x];
@@ -79,21 +98,84 @@ function App() {
       }
 
       return movesArr;
-
-      // for (let y = 1; y <= 8; y++) {
-      //   for (let x = 1; x <= 8; x++) {
-      // [2, 2] => [1,1] [1,2] [1,3] [2,1] [2,3] [3,1] [3,2] [3,3]
-      // [3,6] => [2,5] [2,6] [2,7] [3,5] [3,7] [4,5] [4,6] [4,7]
-      // [5,3] => [4,2] [4,3] [4,4] [5,2] [5,4] [6,2] [6,3] [6,4]
-      // CENTER
-      // [y,x] => [y-1,x-1] [y-1,x] [y-1,x+1] [y,x-1] [y,+1] [y+1,x-1] [y+!,x] [y+1,x+1]
-      //CORNER
-      // [1,1] => [1, 2], [2,1], [2,2]
-      // [8,8] => [7,7], [7,8], [8,7]
-      // [4,1] => [3,1], [3, 2], [4,2], [5,1], [5,2]
-      //     }
-      //   }
     }
+
+    if (curPiece.includes('Queen')) {
+      let x, y;
+      // DIAG -45deg
+      y = curPosition[0] - 1;
+      for (let x = curPosition[1] - 1; x > 0; x--) {
+        if (y < 1) break;
+        const possible = [y, x];
+        movesArr.push(possible);
+        y -= 1;
+      }
+
+      // DIAG +45deg
+      y = curPosition[0] - 1;
+      for (let x = curPosition[1] + 1; x <= 8; x++) {
+        if (y < 1) break;
+        const possible = [y, x];
+        movesArr.push(possible);
+        y -= 1;
+      }
+
+      // DIAG +135deg
+      y = curPosition[0] + 1;
+      for (let x = curPosition[1] + 1; x <= 8; x++) {
+        if (y > 8) break;
+        const possible = [y, x];
+        movesArr.push(possible);
+        y += 1;
+      }
+
+      // DIAG +225deg
+      y = curPosition[0] + 1;
+      for (let x = curPosition[1] - 1; x > 0; x--) {
+        if (y > 8) break;
+        const possible = [y, x];
+        movesArr.push(possible);
+        y += 1;
+      }
+
+      // VERT 0deg
+      x = curPosition[1];
+      for (let y = curPosition[0] - 1; y > 0; y--) {
+        const possible = [y, x];
+        movesArr.push(possible);
+      }
+
+      // VERT 180deg
+      x = curPosition[1];
+      for (let y = curPosition[0] + 1; y <= 8; y++) {
+        const possible = [y, x];
+        movesArr.push(possible);
+      }
+
+      // HOR 90deg
+      y = curPosition[0];
+      for (let x = curPosition[1] + 1; x <= 8; x++) {
+        const possible = [y, x];
+        movesArr.push(possible);
+      }
+
+      // HOR 270deg
+      y = curPosition[0];
+      for (let x = curPosition[1] - 1; x > 0; x--) {
+        const possible = [y, x];
+        movesArr.push(possible);
+      }
+
+      return movesArr;
+    }
+
+    // [5,4] => DIAG -45deg (-y -x) [4,3] [3,2] [2,1] VERT 0deg (+y x) 1 [4,4] [3,4] [2,4] [1,4]
+    // [5,4] => DIAG +45deg (-y +x) [4,5] [3,6] [2,7] [1,8] HOR 90deg (y +x) [4,4] [3,4] [2,4] [1,4]
+
+    // DIAG +135deg (+y +x)
+    // VERT +180deg (+y x)
+    // DIAG +225deg (+y -x)
+    // HOR +270deg (-y x)
   };
 
   const getSquare = (e) => {
@@ -143,6 +225,7 @@ function App() {
     setPiece({
       name: curPiece,
       legalMoves,
+      side: e.target.parentNode.className.includes('white') ? 'white' : 'black',
     });
   };
 
@@ -163,13 +246,18 @@ function App() {
       setLeft(objLeft);
       setTop(objTop);
 
+      // console.log(piece.legalMoves);
       if (piece.legalMoves) displayHint(piece.legalMoves, 1);
 
       const square = getSquare(e);
       getCoords(square, 1);
+
       setPiece({
         name: piece.name,
-        legalMoves: checkMoves(piece.name, initial.position),
+        legalMoves: checkMoves(piece.name, initial.position, 'moveCheck'),
+        side: e.target.parentNode.className.includes('white')
+          ? 'white'
+          : 'black',
       });
     }
   };
@@ -177,23 +265,31 @@ function App() {
   const takePiece = (square) => {
     const { left, top } = square.getBoundingClientRect();
 
+    let ilegal = false;
+
     const pieces = [...piecesRef.current.children];
 
     pieces.forEach((el) => {
       const { left: elLeft, top: elTop } = el.getBoundingClientRect();
-      if (
-        elLeft === left &&
-        elTop === top &&
-        !el.className.includes(piece.name)
-      ) {
+
+      if (el.className.includes(piece.name)) return;
+
+      if (el.className.includes(piece.side)) {
+        if (elLeft === left && elTop === top) {
+          ilegal = true;
+        }
+      }
+
+      if (elLeft === left && elTop === top && !ilegal) {
         el.style.display = 'none';
       }
     });
+
+    return ilegal;
   };
 
   const makeMove = (finalSquare, targetPiece) => {
-    const { left, top } = finalSquare.getBoundingClientRect();
-    const animationTime = 110;
+    const animationTime = 100;
 
     targetPiece.parentNode.style.transition = 'all ' + animationTime + 'ms';
 
@@ -201,10 +297,19 @@ function App() {
       targetPiece.parentNode.style.transition = 'none';
     }, animationTime);
 
-    takePiece(finalSquare);
+    const ilegal = takePiece(finalSquare);
 
-    targetPiece.parentNode.style.left = left + 'px';
-    targetPiece.parentNode.style.top = top + 'px';
+    if (ilegal) {
+      const { left, top } = initial.square.getBoundingClientRect();
+      targetPiece.parentNode.style.left = left + 'px';
+      targetPiece.parentNode.style.top = top + 'px';
+    } else {
+      const { left, top } = finalSquare.getBoundingClientRect();
+      targetPiece.parentNode.style.left = left + 'px';
+      targetPiece.parentNode.style.top = top + 'px';
+      moveSoundRef.current.playbackRate = 3.5;
+      moveSoundRef.current.play();
+    }
   };
 
   const upHandler = (e) => {
@@ -224,17 +329,16 @@ function App() {
       return;
     }
 
-    moveSoundRef.current.playbackRate = 3.5;
-    moveSoundRef.current.play();
-
     const square = getSquare(e);
 
     makeMove(square, e.target);
 
     const coords = getCoords(square, 0);
+
     setPiece({
       name: piece.name,
       legalMoves: checkMoves(coords),
+      side: e.target.parentNode.className.includes('white') ? 'white' : 'black',
     });
   };
 
@@ -328,6 +432,21 @@ function App() {
           hold={hold}
           left={left.blackKing}
           top={top.blackKing}
+          onClickDown={downHandler}
+        />
+        <Queen
+          side='black'
+          hold={hold}
+          left={left.blackQueen}
+          top={top.blackQueen}
+          onClickDown={downHandler}
+        />
+
+        <Queen
+          side='white'
+          hold={hold}
+          left={left.whiteQueen}
+          top={top.whiteQueen}
           onClickDown={downHandler}
         />
       </div>

@@ -74,7 +74,7 @@ body {
 
 .board-container {
   padding: 1rem;
-  background-color: crimson;
+  background-color: rgba(224, 37, 74, 0.685);
   width: fit-content;
   margin: 0 auto;
   color: rgba(1, 1, 1, 0.8);
@@ -88,12 +88,12 @@ body {
 .upper-coords {
   position: relative;
   height: 1rem;
-  width: calc(100% - 1rem);
-  margin-left: 1rem;
+  width: calc(100%);
+  /* margin-left: 1rem; */
   display: flex;
   justify-content: space-between;
   align-items: center;
-  /* padding-left: 1rem; */
+  padding-left: 1rem;
 }
 
 .upper-coords p {
