@@ -362,7 +362,7 @@ function App() {
 
     const curPosition = [Math.ceil(index / 8), index % 8 || 8];
 
-    if (moment) {
+    if (moment && curPosition !== final) {
       setFinal(curPosition);
     } else {
       setInitial({
@@ -390,8 +390,6 @@ function App() {
   };
 
   const moveHandler = (e) => {
-    setCount('coords: ' + e.clientX + ' ' + e.clientY);
-
     if (hold) {
       const objLeft = {};
       const objTop = {};
@@ -399,27 +397,28 @@ function App() {
       objLeft[piece.name] = e.clientX - box / 2;
       objTop[piece.name] = e.clientY - box / 2;
 
+      setLeft(objLeft);
+      setTop(objTop);
+
       if (e.target.parentNode.className.includes(piece.name.slice(0, -1))) {
         e.target.parentNode.style.zIndex = 2;
       }
 
-      setLeft(objLeft);
-      setTop(objTop);
+      if (piece.legalMoves) {
+        displayHint(piece.legalMoves, 1);
+        const square = getSquare(e);
+        getCoords(square, 1);
+      } else {
+        const legalMoves = piece.legalMoves || checkMoves(piece.name, initial.position, 'moveCheck');
 
-      if (piece.legalMoves) displayHint(piece.legalMoves, 1);
-
-      const square = getSquare(e);
-      getCoords(square, 1);
-
-      const legalMoves = piece.legalMoves || checkMoves(piece.name, initial.position, 'moveCheck');
-
-      setPiece({
-        name: piece.name,
-        legalMoves,
-        side: e.target.parentNode.className.includes('white')
-          ? 'white'
-          : 'black',
-      });
+        setPiece({
+          name: piece.name,
+          legalMoves,
+          side: e.target.parentNode.className.includes('white')
+            ? 'white'
+            : 'black',
+        });
+      }
     }
   };
 
@@ -548,11 +547,11 @@ function App() {
   return (
     <div onMouseMove={moveHandler} onMouseUp={upHandler} className='App'>
       <audio ref={moveSoundRef} src={moveSfx}></audio>
-      <h1 className='noselect'>{count}</h1>
+      {/* <h1 className='noselect'>{count}</h1>
       <h3>
         piece: {piece.name || 'none'} initial: legalMoves: {piece.legalMoves}{' '}
         final: {`${final[0]}, ${final[1]}`}
-      </h3>
+      </h3> */}
       <div className='board-container'>
         <div style={{ flexDirection: 'row' }} className='upper-coords'>
           <p>A</p>
