@@ -262,10 +262,10 @@ function App() {
     if (curPiece.includes('Knight')) {
       const y0 = curPosition[0];
       const x0 = curPosition[1];
-      // console.log(curPosition);
-      for (let y = y0 - 2; y < 9; y += 4) {
+      for (let y = y0 - 2; y < 9 && y <= y0 + 2; y += 4) {
         if (y < 1) continue;
         for (let x = x0 - 1; x < 9 && x <= x0 + 1; x += 2) {
+          if (x < 1) continue;
           const possible = [y, x];
           movesArr.push(possible);
         }
