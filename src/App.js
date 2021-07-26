@@ -4,6 +4,7 @@ import './App.css';
 import King from './components/Pieces/King';
 import Queen from './components/Pieces/Queen';
 import Bishop from './components/Pieces/Bishop';
+import Knight from './components/Pieces/Knight';
 import moveSfx from './moveSfx.wav';
 
 function App() {
@@ -25,6 +26,8 @@ function App() {
       const pieces = [...piecesRef.current.children];
       let whiteBishopCount = 0;
       let blackBishopCount = 0;
+      let whiteKnightCount = 0;
+      let blackKnightCount = 0;
       pieces.forEach((piece) => {
         if (piece.className.includes('whiteKing')) {
           const square = boardRef.current.children[60];
@@ -80,6 +83,26 @@ function App() {
           piece.style.top = squareTop + 'px';
           piece.style.opacity = 1;
           blackBishopCount += 1;
+        }
+
+        if (piece.className.includes('blackKnight')) {
+          const square = boardRef.current.children[blackKnightCount ? 1 : 6];
+          const { left: squareLeft, top: squareTop } =
+            square.getBoundingClientRect();
+          piece.style.left = squareLeft + 'px';
+          piece.style.top = squareTop + 'px';
+          piece.style.opacity = 1;
+          blackKnightCount += 1;
+        }
+
+        if (piece.className.includes('whiteKnight')) {
+          const square = boardRef.current.children[whiteKnightCount ? 57 : 62];
+          const { left: squareLeft, top: squareTop } =
+            square.getBoundingClientRect();
+          piece.style.left = squareLeft + 'px';
+          piece.style.top = squareTop + 'px';
+          piece.style.opacity = 1;
+          whiteKnightCount += 1;
         }
       });
     };
@@ -193,7 +216,7 @@ function App() {
     }
 
     if (curPiece.includes('Bishop')) {
-      let x, y;
+      let y;
       // DIAG -45deg
       y = curPosition[0] - 1;
       for (let x = curPosition[1] - 1; x > 0; x--) {
@@ -230,6 +253,33 @@ function App() {
         y += 1;
       }
 
+      return movesArr;
+    }
+
+    // [3,3] => [1,2] [1,4] [2,1] [2,5] [4,1] [4,5] [5,2] [5,4]
+    // [y,x] => [y-2, x-1] [y-2, x+1] [y-1, x-2] [y-1, x+2] [y+1, x-2] [y+1, x+2] [y+2, x-1] [y+2, x+1]
+
+    if (curPiece.includes('Knight')) {
+      const y0 = curPosition[0];
+      const x0 = curPosition[1];
+      // console.log(curPosition);
+      for (let y = y0 - 2; y < 9; y += 4) {
+        if (y < 1) continue;
+        for (let x = x0 - 1; x < 9 && x <= x0 + 1; x += 2) {
+          const possible = [y, x];
+          movesArr.push(possible);
+        }
+      }
+
+      for (let y = y0 - 1; y < 9; y += 2) {
+        if (y < 1) continue;
+        for (let x = x0 - 2; x < 9; x += 4) {
+          if (x <= x0 + 2 && x > 0 && y <= y0 + 1) {
+            const possible = [y, x];
+            movesArr.push(possible);
+          }
+        }
+      }
       return movesArr;
     }
 
@@ -316,9 +366,11 @@ function App() {
       const square = getSquare(e);
       getCoords(square, 1);
 
+      const legalMoves = piece.legalMoves || checkMoves(piece.name, initial.position, 'moveCheck');
+
       setPiece({
         name: piece.name,
-        legalMoves: checkMoves(piece.name, initial.position, 'moveCheck'),
+        legalMoves,
         side: e.target.parentNode.className.includes('white')
           ? 'white'
           : 'black',
@@ -544,6 +596,38 @@ function App() {
           hold={hold}
           left={left.whiteBishop1}
           top={top.whiteBishop1}
+          index={1}
+          onClickDown={downHandler}
+        />
+        <Knight
+          side='white'
+          hold={hold}
+          left={left.whiteKnight0}
+          top={top.whiteKnight0}
+          index={0}
+          onClickDown={downHandler}
+        />
+        <Knight
+          side='white'
+          hold={hold}
+          left={left.whiteKnight1}
+          top={top.whiteKnight1}
+          index={1}
+          onClickDown={downHandler}
+        />
+        <Knight
+          side='black'
+          hold={hold}
+          left={left.blackKnight0}
+          top={top.blackKnight0}
+          index={0}
+          onClickDown={downHandler}
+        />
+        <Knight
+          side='black'
+          hold={hold}
+          left={left.blackKnight1}
+          top={top.blackKnight1}
           index={1}
           onClickDown={downHandler}
         />
