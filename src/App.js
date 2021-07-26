@@ -5,6 +5,7 @@ import King from './components/Pieces/King';
 import Queen from './components/Pieces/Queen';
 import Bishop from './components/Pieces/Bishop';
 import Knight from './components/Pieces/Knight';
+import Rook from './components/Pieces/Rook';
 import moveSfx from './moveSfx.wav';
 
 function App() {
@@ -28,6 +29,8 @@ function App() {
       let blackBishopCount = 0;
       let whiteKnightCount = 0;
       let blackKnightCount = 0;
+      let whiteRookCount = 0;
+      let blackRookCount = 0;
       pieces.forEach((piece) => {
         if (piece.className.includes('whiteKing')) {
           const square = boardRef.current.children[60];
@@ -103,6 +106,26 @@ function App() {
           piece.style.top = squareTop + 'px';
           piece.style.opacity = 1;
           whiteKnightCount += 1;
+        }
+
+        if (piece.className.includes('blackRook')) {
+          const square = boardRef.current.children[blackRookCount ? 0 : 7];
+          const { left: squareLeft, top: squareTop } =
+            square.getBoundingClientRect();
+          piece.style.left = squareLeft + 'px';
+          piece.style.top = squareTop + 'px';
+          piece.style.opacity = 1;
+          blackRookCount += 1;
+        }
+  
+        if (piece.className.includes('whiteRook')) {
+          const square = boardRef.current.children[whiteRookCount ? 56 : 63];
+          const { left: squareLeft, top: squareTop } =
+            square.getBoundingClientRect();
+          piece.style.left = squareLeft + 'px';
+          piece.style.top = squareTop + 'px';
+          piece.style.opacity = 1;
+          whiteRookCount += 1;
         }
       });
     };
@@ -256,9 +279,6 @@ function App() {
       return movesArr;
     }
 
-    // [3,3] => [1,2] [1,4] [2,1] [2,5] [4,1] [4,5] [5,2] [5,4]
-    // [y,x] => [y-2, x-1] [y-2, x+1] [y-1, x-2] [y-1, x+2] [y+1, x-2] [y+1, x+2] [y+2, x-1] [y+2, x+1]
-
     if (curPiece.includes('Knight')) {
       const y0 = curPosition[0];
       const x0 = curPosition[1];
@@ -283,13 +303,39 @@ function App() {
       return movesArr;
     }
 
-    // [5,4] => DIAG -45deg (-y -x) [4,3] [3,2] [2,1] VERT 0deg (+y x) 1 [4,4] [3,4] [2,4] [1,4]
-    // [5,4] => DIAG +45deg (-y +x) [4,5] [3,6] [2,7] [1,8] HOR 90deg (y +x) [4,4] [3,4] [2,4] [1,4]
+    if (curPiece.includes('Rook')) {
+      let x, y;
 
-    // DIAG +135deg (+y +x)
-    // VERT +180deg (+y x)
-    // DIAG +225deg (+y -x)
-    // HOR +270deg (-y x)
+      // VERT 0deg
+      x = curPosition[1];
+      for (let y = curPosition[0] - 1; y > 0; y--) {
+        const possible = [y, x];
+        movesArr.push(possible);
+      }
+
+      // VERT 180deg
+      x = curPosition[1];
+      for (let y = curPosition[0] + 1; y <= 8; y++) {
+        const possible = [y, x];
+        movesArr.push(possible);
+      }
+
+      // HOR 90deg
+      y = curPosition[0];
+      for (let x = curPosition[1] + 1; x <= 8; x++) {
+        const possible = [y, x];
+        movesArr.push(possible);
+      }
+
+      // HOR 270deg
+      y = curPosition[0];
+      for (let x = curPosition[1] - 1; x > 0; x--) {
+        const possible = [y, x];
+        movesArr.push(possible);
+      }
+
+      return movesArr;
+    }
   };
 
   const getSquare = (e) => {
@@ -627,6 +673,38 @@ function App() {
           hold={hold}
           left={left.blackKnight1}
           top={top.blackKnight1}
+          index={1}
+          onClickDown={downHandler}
+        />
+        <Rook
+          side='black'
+          hold={hold}
+          left={left.blackRook0}
+          top={top.blackRook0}
+          index={0}
+          onClickDown={downHandler}
+        />
+        <Rook
+          side='black'
+          hold={hold}
+          left={left.blackRook1}
+          top={top.blackRook1}
+          index={1}
+          onClickDown={downHandler}
+        />
+        <Rook
+          side='white'
+          hold={hold}
+          left={left.whiteRook0}
+          top={top.whiteRook0}
+          index={0}
+          onClickDown={downHandler}
+        />
+        <Rook
+          side='white'
+          hold={hold}
+          left={left.whiteRook1}
+          top={top.whiteRook1}
           index={1}
           onClickDown={downHandler}
         />
