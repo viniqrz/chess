@@ -353,14 +353,13 @@ function App() {
       objLeft[piece.name] = e.clientX - box / 2;
       objTop[piece.name] = e.clientY - box / 2;
 
-      if (e.target.parentNode.className.includes(piece.name)) {
+      if (e.target.parentNode.className.includes(piece.name.slice(0, -1))) {
         e.target.parentNode.style.zIndex = 2;
       }
 
       setLeft(objLeft);
       setTop(objTop);
 
-      // console.log(piece.legalMoves);
       if (piece.legalMoves) displayHint(piece.legalMoves, 1);
 
       const square = getSquare(e);
