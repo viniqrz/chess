@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 
 import './App.css';
+import moveSfx from './moveSfx.wav';
+
 import King from './components/Pieces/King';
 import Queen from './components/Pieces/Queen';
 import Bishop from './components/Pieces/Bishop';
 import Knight from './components/Pieces/Knight';
 import Rook from './components/Pieces/Rook';
-import moveSfx from './moveSfx.wav';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -137,18 +138,125 @@ function App() {
     };
   });
 
+  const arrayToIndex = (y, x) => {
+    return y * 8 - (8 - [x]) - 1;
+  }
+
   const displayHint = (legalMoves, show) => {
     legalMoves
       .map((move) => {
-        return move[0] * 8 - (8 - [move[1]]) - 1;
+        return arrayToIndex(move[0], move[1]);
       })
       .forEach((index) => {
         boardRef.current.children[index].children[0].style.opacity = show;
       });
   };
 
-  const checkMoves = (curPiece, curPosition) => {
+  const getLegalMoves = (curPiece, curPosition) => {
     let movesArr = [];
+
+    const getLine0deg = (init, prevArr=null) => {
+      let arr = [];
+      let x = init[1];
+      for (let y = init[0] - 1; y > 0; y--) {
+        const possible = [y, x];
+        arr.push(possible);
+        if (prevArr) prevArr.push(possible);
+      }
+
+      return prevArr || arr;
+    }
+
+    const getLine45deg = (init, prevArr=null) => {
+      let arr = [];
+      let y = init[0] - 1;
+      for (let x = init[1] + 1; x <= 8; x++) {
+        if (y < 1) break;
+        const possible = [y, x];
+        arr.push(possible);
+        if (prevArr) prevArr.push(possible);
+        y -= 1;
+      }
+
+      return prevArr || arr;
+    }
+
+    const getLine90deg = (init, prevArr=null) => {
+      let arr = [];
+      let y = init[0];
+      for (let x = init[1] + 1; x <= 8; x++) {
+        const possible = [y, x];
+        movesArr.push(possible);
+      }
+
+      return prevArr || arr;
+    }
+
+    const getLine135deg = (init, prevArr=null) => {
+      let arr = [];
+      let y = init[0] + 1;
+      for (let x = init[1] + 1; x <= 8; x++) {
+        if (y > 8) break;
+        const possible = [y, x];
+        arr.push(possible);
+        if (prevArr) prevArr.push(possible);
+        y += 1;
+      }
+
+      return prevArr || arr;
+    }
+
+    const getLine180deg = (init, prevArr=null) => {
+      let arr = [];
+      let x = init[1];
+      for (let y = init[0] + 1; y <= 8; y++) {
+        const possible = [y, x];
+        movesArr.push(possible);
+        if (prevArr) prevArr.push(possible);
+      }
+
+      return prevArr || arr;
+    }
+
+    const getLine225deg = (init, prevArr=null) => {
+      let arr = [];
+      let y = init[0] + 1;
+      for (let x = init[1] - 1; x > 0; x--) {
+        if (y > 8) break;
+        const possible = [y, x];
+        arr.push(possible);
+        if (prevArr) prevArr.push(possible);
+        y += 1;
+      }
+
+      return prevArr || arr;
+    }
+
+    const getLine270deg = (init, prevArr=null) => {
+      let arr = [];
+      let y = init[0];
+      for (let x = init[1] - 1; x > 0; x--) {
+        const possible = [y, x];
+        movesArr.push(possible);
+        if (prevArr) init.push(possible);
+      }
+
+      return prevArr || arr;
+    }
+
+    const getLine315deg = (init, prevArr=null) => {
+      let arr = [];
+      let y = init[0] - 1;
+      for (let x = init[1] - 1; x > 0; x--) {
+        if (y < 1) break;
+        const possible = [y, x];
+        arr.push(possible);
+        if (prevArr) prevArr.push(possible);
+        y -= 1;
+      }
+
+      return prevArr || arr;
+    }
 
     if (curPiece.includes('King')) {
       for (let y = curPosition[0] - 1; y <= curPosition[0] + 1; y++) {
@@ -170,111 +278,23 @@ function App() {
     }
 
     if (curPiece.includes('Queen')) {
-      let x, y;
-      // DIAG -45deg
-      y = curPosition[0] - 1;
-      for (let x = curPosition[1] - 1; x > 0; x--) {
-        if (y < 1) break;
-        const possible = [y, x];
-        movesArr.push(possible);
-        y -= 1;
-      }
-
-      // DIAG +45deg
-      y = curPosition[0] - 1;
-      for (let x = curPosition[1] + 1; x <= 8; x++) {
-        if (y < 1) break;
-        const possible = [y, x];
-        movesArr.push(possible);
-        y -= 1;
-      }
-
-      // DIAG +135deg
-      y = curPosition[0] + 1;
-      for (let x = curPosition[1] + 1; x <= 8; x++) {
-        if (y > 8) break;
-        const possible = [y, x];
-        movesArr.push(possible);
-        y += 1;
-      }
-
-      // DIAG +225deg
-      y = curPosition[0] + 1;
-      for (let x = curPosition[1] - 1; x > 0; x--) {
-        if (y > 8) break;
-        const possible = [y, x];
-        movesArr.push(possible);
-        y += 1;
-      }
-
-      // VERT 0deg
-      x = curPosition[1];
-      for (let y = curPosition[0] - 1; y > 0; y--) {
-        const possible = [y, x];
-        movesArr.push(possible);
-      }
-
-      // VERT 180deg
-      x = curPosition[1];
-      for (let y = curPosition[0] + 1; y <= 8; y++) {
-        const possible = [y, x];
-        movesArr.push(possible);
-      }
-
-      // HOR 90deg
-      y = curPosition[0];
-      for (let x = curPosition[1] + 1; x <= 8; x++) {
-        const possible = [y, x];
-        movesArr.push(possible);
-      }
-
-      // HOR 270deg
-      y = curPosition[0];
-      for (let x = curPosition[1] - 1; x > 0; x--) {
-        const possible = [y, x];
-        movesArr.push(possible);
-      }
+      movesArr = getLine315deg(curPosition, movesArr); 
+      movesArr = getLine45deg(curPosition, movesArr); 
+      movesArr = getLine135deg(curPosition, movesArr); 
+      movesArr = getLine225deg(curPosition, movesArr); 
+      movesArr = getLine0deg(curPosition, movesArr); 
+      movesArr = getLine180deg(curPosition, movesArr);
+      movesArr = getLine90deg(curPosition, movesArr);
+      movesArr = getLine270deg(curPosition, movesArr);
 
       return movesArr;
     }
 
     if (curPiece.includes('Bishop')) {
-      let y;
-      // DIAG -45deg
-      y = curPosition[0] - 1;
-      for (let x = curPosition[1] - 1; x > 0; x--) {
-        if (y < 1) break;
-        const possible = [y, x];
-        movesArr.push(possible);
-        y -= 1;
-      }
-
-      // DIAG +45deg
-      y = curPosition[0] - 1;
-      for (let x = curPosition[1] + 1; x <= 8; x++) {
-        if (y < 1) break;
-        const possible = [y, x];
-        movesArr.push(possible);
-        y -= 1;
-      }
-
-      // DIAG +135deg
-      y = curPosition[0] + 1;
-      for (let x = curPosition[1] + 1; x <= 8; x++) {
-        if (y > 8) break;
-        const possible = [y, x];
-        movesArr.push(possible);
-        y += 1;
-      }
-
-      // DIAG +225deg
-      y = curPosition[0] + 1;
-      for (let x = curPosition[1] - 1; x > 0; x--) {
-        if (y > 8) break;
-        const possible = [y, x];
-        movesArr.push(possible);
-        y += 1;
-      }
+      movesArr = getLine315deg(curPosition, movesArr); 
+      movesArr = getLine45deg(curPosition, movesArr); 
+      movesArr = getLine135deg(curPosition, movesArr); 
+      movesArr = getLine225deg(curPosition, movesArr); 
 
       return movesArr;
     }
@@ -304,35 +324,10 @@ function App() {
     }
 
     if (curPiece.includes('Rook')) {
-      let x, y;
-
-      // VERT 0deg
-      x = curPosition[1];
-      for (let y = curPosition[0] - 1; y > 0; y--) {
-        const possible = [y, x];
-        movesArr.push(possible);
-      }
-
-      // VERT 180deg
-      x = curPosition[1];
-      for (let y = curPosition[0] + 1; y <= 8; y++) {
-        const possible = [y, x];
-        movesArr.push(possible);
-      }
-
-      // HOR 90deg
-      y = curPosition[0];
-      for (let x = curPosition[1] + 1; x <= 8; x++) {
-        const possible = [y, x];
-        movesArr.push(possible);
-      }
-
-      // HOR 270deg
-      y = curPosition[0];
-      for (let x = curPosition[1] - 1; x > 0; x--) {
-        const possible = [y, x];
-        movesArr.push(possible);
-      }
+      movesArr = getLine0deg(curPosition, movesArr); 
+      movesArr = getLine90deg(curPosition, movesArr); 
+      movesArr = getLine180deg(curPosition, movesArr); 
+      movesArr = getLine270deg(curPosition, movesArr); 
 
       return movesArr;
     }
@@ -380,7 +375,7 @@ function App() {
 
     const square = getSquare(e);
     const coords = getCoords(square, 0);
-    const legalMoves = checkMoves(curPiece, coords);
+    const legalMoves = getLegalMoves(curPiece, coords);
 
     setPiece({
       name: curPiece,
@@ -409,7 +404,7 @@ function App() {
         const square = getSquare(e);
         getCoords(square, 1);
       } else {
-        const legalMoves = piece.legalMoves || checkMoves(piece.name, initial.position, 'moveCheck');
+        const legalMoves = piece.legalMoves || getLegalMoves(piece.name, initial.position, 'moveCheck');
 
         setPiece({
           name: piece.name,
@@ -448,6 +443,30 @@ function App() {
     return ilegal;
   };
 
+  const checkPiecesAhead = () => {
+    // legalMoves is not updated !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    const legalMoves = piece.legalMoves;
+    const pieces = Array.from(piecesRef.current.children);
+    const squares = Array.from(boardRef.current.children);
+    let pipoca = '';
+
+    legalMoves.forEach((legalSquare) => {
+      const index = arrayToIndex(legalSquare[0], legalSquare[1]);
+      const { left, top } = squares[index].getBoundingClientRect();
+
+      pieces.forEach((piece) => {
+        const { left: pieceLeft, top: pieceTop } = piece.getBoundingClientRect();
+        if (left === pieceLeft && top === pieceTop) {
+          console.log('pipoca', piece.className);
+          pipoca = 'pipoca';
+        }
+      });
+    });
+
+
+    return pipoca;
+  }
+
   const makeMove = (finalSquare, targetPiece) => {
     const animationTime = 100;
 
@@ -458,6 +477,8 @@ function App() {
     }, animationTime);
 
     const ilegal = takePiece(finalSquare);
+    
+    // const pipoca = checkPiecesAhead();
 
     if (ilegal) {
       const { left, top } = initial.square.getBoundingClientRect();
@@ -500,7 +521,7 @@ function App() {
 
     setPiece({
       name: piece.name,
-      legalMoves: checkMoves(coords),
+      legalMoves: getLegalMoves(coords),
       side: e.target.parentNode.className.includes('white') ? 'white' : 'black',
     });
   };
@@ -547,11 +568,11 @@ function App() {
   return (
     <div onMouseMove={moveHandler} onMouseUp={upHandler} className='App'>
       <audio ref={moveSoundRef} src={moveSfx}></audio>
-      {/* <h1 className='noselect'>{count}</h1>
+      {/* <h1 className='noselect'>{count}</h1> */}
       <h3>
         piece: {piece.name || 'none'} initial: legalMoves: {piece.legalMoves}{' '}
         final: {`${final[0]}, ${final[1]}`}
-      </h3> */}
+      </h3>
       <div className='board-container'>
         <div style={{ flexDirection: 'row' }} className='upper-coords'>
           <p>A</p>
