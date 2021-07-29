@@ -23,7 +23,7 @@ const Rook = (props) => {
       }}
       ref={pieceRef}
       onMouseDown={clickDownHandler}
-      className={`piece ${props.side}Rook noselect`}
+      className={`piece noselect ${props.side}Rook${props.index}`}
     >
       <img
         draggable='false'

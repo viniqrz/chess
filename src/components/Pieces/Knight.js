@@ -24,7 +24,7 @@ const Knight = (props) => {
       }}
       ref={pieceRef}
       onMouseDown={clickDownHandler}
-      className={`piece ${props.side}Knight noselect`}
+      className={`piece noselect ${props.side}Knight${props.index}`}
     >
       <img
         draggable='false'

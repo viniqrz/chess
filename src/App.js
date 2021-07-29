@@ -40,12 +40,6 @@ function App() {
   useEffect(() => {
     const arrangePieces = () => {
       const pieces = [...piecesRef.current.children];
-      let whiteBishopCount = 0;
-      let blackBishopCount = 0;
-      let whiteKnightCount = 0;
-      let blackKnightCount = 0;
-      let whiteRookCount = 0;
-      let blackRookCount = 0;
       pieces.forEach((piece) => {
         if (piece.className.includes('whiteKing')) {
           const square = boardRef.current.children[60];
@@ -84,63 +78,63 @@ function App() {
         }
 
         if (piece.className.includes('whiteBishop')) {
-          const square = boardRef.current.children[whiteBishopCount ? 58 : 61];
+          const pieceIndexEqualsToOne = (piece.className.includes('1'));
+          const square = boardRef.current.children[pieceIndexEqualsToOne ? 61 : 58];
           const { left: squareLeft, top: squareTop } =
             square.getBoundingClientRect();
           piece.style.left = squareLeft + 'px';
           piece.style.top = squareTop + 'px';
           piece.style.opacity = 1;
-          whiteBishopCount += 1;
         }
 
         if (piece.className.includes('blackBishop')) {
-          const square = boardRef.current.children[blackBishopCount ? 2 : 5];
+          const pieceIndexEqualsToOne = (piece.className.includes('1'));
+          const square = boardRef.current.children[pieceIndexEqualsToOne ? 5 : 2];
           const { left: squareLeft, top: squareTop } =
             square.getBoundingClientRect();
           piece.style.left = squareLeft + 'px';
           piece.style.top = squareTop + 'px';
           piece.style.opacity = 1;
-          blackBishopCount += 1;
         }
 
         if (piece.className.includes('blackKnight')) {
-          const square = boardRef.current.children[blackKnightCount ? 1 : 6];
+          const pieceIndexEqualsToOne = (piece.className.includes('1'));
+          const square = boardRef.current.children[pieceIndexEqualsToOne ? 6 : 1];
           const { left: squareLeft, top: squareTop } =
             square.getBoundingClientRect();
           piece.style.left = squareLeft + 'px';
           piece.style.top = squareTop + 'px';
           piece.style.opacity = 1;
-          blackKnightCount += 1;
         }
 
         if (piece.className.includes('whiteKnight')) {
-          const square = boardRef.current.children[whiteKnightCount ? 57 : 62];
+          const pieceIndexEqualsToOne = (piece.className.includes('1'));
+          const square = boardRef.current.children[pieceIndexEqualsToOne ? 62 : 57];
           const { left: squareLeft, top: squareTop } =
             square.getBoundingClientRect();
           piece.style.left = squareLeft + 'px';
           piece.style.top = squareTop + 'px';
           piece.style.opacity = 1;
-          whiteKnightCount += 1;
         }
 
         if (piece.className.includes('blackRook')) {
-          const square = boardRef.current.children[blackRookCount ? 0 : 7];
+          const pieceIndexEqualsToOne = (piece.className.includes('1'));
+          const square = boardRef.current.children[pieceIndexEqualsToOne ? 7 : 0];
           const { left: squareLeft, top: squareTop } =
             square.getBoundingClientRect();
           piece.style.left = squareLeft + 'px';
           piece.style.top = squareTop + 'px';
           piece.style.opacity = 1;
-          blackRookCount += 1;
         }
   
         if (piece.className.includes('whiteRook')) {
-          const square = boardRef.current.children[whiteRookCount ? 56 : 63];
+          const pieceIndexEqualsToOne = (piece.className.includes('1'));
+          const square = boardRef.current.children[pieceIndexEqualsToOne ? 63 : 56];
           const { left: squareLeft, top: squareTop } =
             square.getBoundingClientRect();
           piece.style.left = squareLeft + 'px';
           piece.style.top = squareTop + 'px';
           piece.style.opacity = 1;
-          whiteRookCount += 1;
         }
       });
     };
