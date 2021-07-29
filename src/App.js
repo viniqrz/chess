@@ -1,13 +1,22 @@
 import { useState, useRef, useEffect } from 'react';
 
 import './App.css';
+
 import moveSfx from './moveSfx.wav';
+import getInitialMap from './getInitialMap';
 
 import King from './components/Pieces/King';
 import Queen from './components/Pieces/Queen';
 import Bishop from './components/Pieces/Bishop';
 import Knight from './components/Pieces/Knight';
 import Rook from './components/Pieces/Rook';
+
+// {
+//   whiteQueen: {
+//     chess: 'd1',
+//     coords: [8,4]
+//   }
+// }
 
 function App() {
   const [count, setCount] = useState(0);
@@ -18,6 +27,11 @@ function App() {
   const [initial, setInitial] = useState({});
   const [final, setFinal] = useState([0, 0]);
   const [piece, setPiece] = useState({});
+  const [map, setMap] = useState(getInitialMap('white')); 
+
+  useEffect(() => {
+    console.log(map);
+  }, [map]);
 
   const boardRef = useRef();
   const piecesRef = useRef();
@@ -377,6 +391,8 @@ function App() {
     const coords = getCoords(square, 0);
     const legalMoves = getLegalMoves(curPiece, coords);
 
+    checkPiecesAhead(legalMoves);
+
     setPiece({
       name: curPiece,
       legalMoves,
@@ -443,14 +459,14 @@ function App() {
     return ilegal;
   };
 
-  const checkPiecesAhead = () => {
+  const checkPiecesAhead = (initLegalMoves) => {
     // legalMoves is not updated !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    const legalMoves = piece.legalMoves;
+    console.log(initLegalMoves);
     const pieces = Array.from(piecesRef.current.children);
     const squares = Array.from(boardRef.current.children);
     let pipoca = '';
 
-    legalMoves.forEach((legalSquare) => {
+    initLegalMoves.forEach((legalSquare) => {
       const index = arrayToIndex(legalSquare[0], legalSquare[1]);
       const { left, top } = squares[index].getBoundingClientRect();
 
@@ -462,7 +478,6 @@ function App() {
         }
       });
     });
-
 
     return pipoca;
   }
@@ -477,8 +492,6 @@ function App() {
     }, animationTime);
 
     const ilegal = takePiece(finalSquare);
-    
-    // const pipoca = checkPiecesAhead();
 
     if (ilegal) {
       const { left, top } = initial.square.getBoundingClientRect();
@@ -488,6 +501,8 @@ function App() {
       const { left, top } = finalSquare.getBoundingClientRect();
       targetPiece.parentNode.style.left = left + 'px';
       targetPiece.parentNode.style.top = top + 'px';
+
+      console.log(piece.name);
 
       if (finalSquare !== initial.square) {
         moveSoundRef.current.playbackRate = 3;
@@ -566,12 +581,12 @@ function App() {
   };
 
   return (
-    <div onMouseMove={moveHandler} onMouseUp={upHandler} className='App'>
+    <div onMouseUp={upHandler} onMouseMove={moveHandler} className='App'>
       <audio ref={moveSoundRef} src={moveSfx}></audio>
       {/* <h1 className='noselect'>{count}</h1> */}
       <h3>
-        piece: {piece.name || 'none'} initial: legalMoves: {piece.legalMoves}{' '}
-        final: {`${final[0]}, ${final[1]}`}
+        legalMoves: {piece.legalMoves}{' '}
+        {/* final: {`${final[0]}, ${final[1]}`} */}
       </h3>
       <div className='board-container'>
         <div style={{ flexDirection: 'row' }} className='upper-coords'>
