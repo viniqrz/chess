@@ -154,7 +154,7 @@ body {
 }
 
 .square:hover {
-  border: 3px solid rgb(247, 247, 247);
+  border: 2.5px solid rgb(247, 247, 247);
 }
 
 .dark {

@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import whiteKnight from './../../img/whiteKnight.svg';
 import blackKnight from './../../img/blackKnight.svg';
-import './Pieces.css';
+import './style/Pieces.css';
 
 const Knight = (props) => {
   const pieceRef = useRef();

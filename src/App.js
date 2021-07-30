@@ -496,7 +496,19 @@ function App() {
       targetPiece.parentNode.style.left = left + 'px';
       targetPiece.parentNode.style.top = top + 'px';
 
-      console.log(piece.name);
+      console.log(piece);
+      const newMap = { ...map };
+
+      if (piece.name.includes('1') || piece.name.includes('0')) {
+        const index = piece.name[piece.name.length-1] * 1;
+        const name = piece.name.slice(0, -1);
+
+        newMap[name][index].coords = final; 
+      } else {
+        newMap[piece.name].coords = final;
+      }
+
+      setMap(newMap);
 
       if (finalSquare !== initial.square) {
         moveSoundRef.current.playbackRate = 3;
