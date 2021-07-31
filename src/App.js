@@ -11,27 +11,16 @@ import Bishop from './components/Pieces/Bishop';
 import Knight from './components/Pieces/Knight';
 import Rook from './components/Pieces/Rook';
 
-// {
-//   whiteQueen: {
-//     chess: 'd1',
-//     coords: [8,4]
-//   }
-// }
-
 function App() {
   const [count, setCount] = useState(0);
-  const [box, setBox] = useState(0);
+  const [pieceBox, setPieceBox] = useState(0);
   const [hold, setHold] = useState(false);
   const [left, setLeft] = useState({});
   const [top, setTop] = useState({});
   const [initial, setInitial] = useState({});
   const [final, setFinal] = useState([0, 0]);
   const [piece, setPiece] = useState({});
-  const [map, setMap] = useState(getInitialMap('white')); 
-
-  useEffect(() => {
-    console.log(map);
-  }, [map]);
+  const [map, setMap] = useState(getInitialMap('white'));
 
   const boardRef = useRef();
   const piecesRef = useRef();
@@ -162,12 +151,12 @@ function App() {
 
   const getLegalMoves = (curPiece, curPosition) => {
     let movesArr = [];
-
+ 
     const getLine0deg = (init, prevArr=null) => {
       let arr = [];
       let x = init[1];
       for (let y = init[0] - 1; y > 0; y--) {
-        const possible = [y, x];
+        const possible = [y, x, '0'];
         arr.push(possible);
         if (prevArr) prevArr.push(possible);
       }
@@ -180,7 +169,7 @@ function App() {
       let y = init[0] - 1;
       for (let x = init[1] + 1; x <= 8; x++) {
         if (y < 1) break;
-        const possible = [y, x];
+        const possible = [y, x, '45'];
         arr.push(possible);
         if (prevArr) prevArr.push(possible);
         y -= 1;
@@ -193,7 +182,7 @@ function App() {
       let arr = [];
       let y = init[0];
       for (let x = init[1] + 1; x <= 8; x++) {
-        const possible = [y, x];
+        const possible = [y, x, '90'];
         movesArr.push(possible);
       }
 
@@ -205,7 +194,7 @@ function App() {
       let y = init[0] + 1;
       for (let x = init[1] + 1; x <= 8; x++) {
         if (y > 8) break;
-        const possible = [y, x];
+        const possible = [y, x, '135'];
         arr.push(possible);
         if (prevArr) prevArr.push(possible);
         y += 1;
@@ -218,7 +207,7 @@ function App() {
       let arr = [];
       let x = init[1];
       for (let y = init[0] + 1; y <= 8; y++) {
-        const possible = [y, x];
+        const possible = [y, x, '180'];
         movesArr.push(possible);
         if (prevArr) prevArr.push(possible);
       }
@@ -231,7 +220,7 @@ function App() {
       let y = init[0] + 1;
       for (let x = init[1] - 1; x > 0; x--) {
         if (y > 8) break;
-        const possible = [y, x];
+        const possible = [y, x, '225'];
         arr.push(possible);
         if (prevArr) prevArr.push(possible);
         y += 1;
@@ -244,7 +233,7 @@ function App() {
       let arr = [];
       let y = init[0];
       for (let x = init[1] - 1; x > 0; x--) {
-        const possible = [y, x];
+        const possible = [y, x, '270'];
         movesArr.push(possible);
         if (prevArr) init.push(possible);
       }
@@ -257,7 +246,7 @@ function App() {
       let y = init[0] - 1;
       for (let x = init[1] - 1; x > 0; x--) {
         if (y < 1) break;
-        const possible = [y, x];
+        const possible = [y, x, '315'];
         arr.push(possible);
         if (prevArr) prevArr.push(possible);
         y -= 1;
@@ -378,14 +367,20 @@ function App() {
   };
 
   const downHandler = (size, e, curPiece) => {
-    setBox(size);
+    setPieceBox(size);
     setHold(true);
 
     const square = getSquare(e);
     const coords = getCoords(square, 0);
-    const legalMoves = getLegalMoves(curPiece, coords);
+    let legalMoves = getLegalMoves(curPiece, coords);
 
-    checkPiecesAhead(legalMoves);
+    if (
+      curPiece.includes('Queen')
+      || curPiece.includes('Rook')
+      || curPiece.includes('Bishop')
+    ) {
+      legalMoves = checkPiecesAhead(legalMoves);
+    }
 
     setPiece({
       name: curPiece,
@@ -399,8 +394,8 @@ function App() {
       const objLeft = {};
       const objTop = {};
 
-      objLeft[piece.name] = e.clientX - box / 2;
-      objTop[piece.name] = e.clientY - box / 2;
+      objLeft[piece.name] = e.clientX - pieceBox / 2;
+      objTop[piece.name] = e.clientY - pieceBox / 2;
 
       setLeft(objLeft);
       setTop(objTop);
@@ -454,26 +449,35 @@ function App() {
   };
 
   const checkPiecesAhead = (initLegalMoves) => {
-    // legalMoves is not updated !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    console.log(initLegalMoves);
     const pieces = Array.from(piecesRef.current.children);
     const squares = Array.from(boardRef.current.children);
-    let pipoca = '';
+    let newArr = initLegalMoves;
+    let cleanedLines = [];
 
     initLegalMoves.forEach((legalSquare) => {
       const index = arrayToIndex(legalSquare[0], legalSquare[1]);
       const { left, top } = squares[index].getBoundingClientRect();
+      const foundCleanedLine = cleanedLines.find(el => el === legalSquare[2]); 
 
-      pieces.forEach((piece) => {
-        const { left: pieceLeft, top: pieceTop } = piece.getBoundingClientRect();
-        if (left === pieceLeft && top === pieceTop) {
-          console.log('pipoca', piece.className);
-          pipoca = 'pipoca';
-        }
-      });
+      if (foundCleanedLine === -1 || foundCleanedLine === undefined) {
+        pieces.forEach((piece) => {
+          const { left: pieceLeft, top: pieceTop } = piece.getBoundingClientRect();
+          if (left === pieceLeft && top === pieceTop) {
+            const legalIndex = newArr.findIndex(el => el[0] === legalSquare[0] && el[1] === legalSquare[1]);
+            const filteredNewArr = newArr.filter((move, i) => {
+              if (move[2] === legalSquare[2] && i > legalIndex) {
+                cleanedLines.push(move[2]);
+              }
+              return !(move[2] === legalSquare[2] && i > legalIndex);
+            });
+
+            newArr = filteredNewArr;
+          }
+        });
+      }
     });
-
-    return pipoca;
+    
+    return newArr;
   }
 
   const makeMove = (finalSquare, targetPiece) => {
@@ -496,7 +500,6 @@ function App() {
       targetPiece.parentNode.style.left = left + 'px';
       targetPiece.parentNode.style.top = top + 'px';
 
-      console.log(piece);
       const newMap = { ...map };
 
       if (piece.name.includes('1') || piece.name.includes('0')) {
@@ -591,7 +594,7 @@ function App() {
       <audio ref={moveSoundRef} src={moveSfx}></audio>
       {/* <h1 className='noselect'>{count}</h1> */}
       <h3>
-        legalMoves: {piece.legalMoves}{' '}
+        {/* legalMoves: {piece.legalMoves}{' '} */}
         {/* final: {`${final[0]}, ${final[1]}`} */}
       </h3>
       <div className='board-container'>
