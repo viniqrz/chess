@@ -1,19 +1,15 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 
 import './App.css';
 
 import moveSfx from './sfx/moveSfx.wav';
 import getInitialMap from './getInitialMap';
 
+import useSquares from './hooks/use-squares';
 import usePieces from './hooks/use-pieces';
 import useLegalMoves from './hooks/use-legal-moves';
 
 import Pieces from './components/Pieces.js';
-import King from './components/Pieces/King';
-import Queen from './components/Pieces/Queen';
-import Bishop from './components/Pieces/Bishop';
-import Knight from './components/Pieces/Knight';
-import Rook from './components/Pieces/Rook';
 
 function App() {
   const [pieceBox, setPieceBox] = useState(0);
@@ -24,19 +20,15 @@ function App() {
   const [final, setFinal] = useState([0, 0]);
   const [piece, setPiece] = useState({});
   const [map, setMap] = useState(getInitialMap('white'));
-  const [pieces, setPieces] = useState();
 
   const boardRef = useRef();
   const piecesRef = useRef();
   const moveSoundRef = useRef();
 
+  const squares = useSquares();
   const getLegalMoves = useLegalMoves();
 
   usePieces(boardRef, piecesRef);
-
-  const getPieces = (piecesNode) => {
-    setPieces(piecesNode);
-  };
 
   const arrayToIndex = (y, x) => {
     return y * 8 - (8 - [x]) - 1;
@@ -267,50 +259,6 @@ function App() {
     const square = getSquare(e);
 
     makeMove(square, e.target);
-
-    setPiece({
-      name: piece.name,
-      side: e.target.parentNode.className.includes('white') ? 'white' : 'black',
-    });
-  };
-
-  const createSquares = () => {
-    let arr = [];
-
-    for (let k = 0; k < 8; k++) {
-      for (let i = 0; i < 8; i++) {
-        if (k % 2 === 0) {
-          if (i % 2 === 0) {
-            arr.push(
-              <div key={k + 1.22 * i} className="square light">
-                <div className="dot"></div>
-              </div>
-            );
-          } else {
-            arr.push(
-              <div key={k + 3.11 * i} className="square dark">
-                <div className="dot"></div>
-              </div>
-            );
-          }
-        } else {
-          if (i % 2 !== 0) {
-            arr.push(
-              <div key={k + 3.633 * i} className="square light">
-                <div className="dot"></div>
-              </div>
-            );
-          } else {
-            arr.push(
-              <div key={k + 3.33 * i} className="square dark">
-                <div className="dot"></div>
-              </div>
-            );
-          }
-        }
-      }
-    }
-    return arr;
   };
 
   return (
@@ -342,7 +290,7 @@ function App() {
             <p>8</p>
           </div>
           <div ref={boardRef} className="board">
-            {createSquares()}
+            {squares}
           </div>
         </div>
       </div>
