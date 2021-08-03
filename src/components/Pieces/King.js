@@ -1,7 +1,6 @@
 import { useRef } from 'react';
 import whiteKing from './../../img/whiteKing.svg';
 import blackKing from './../../img/blackKing.svg';
-import './style/Pieces.css';
 
 const King = (props) => {
   const pieceRef = useRef();
@@ -23,9 +22,9 @@ const King = (props) => {
       className={`piece ${props.side}King noselect`}
     >
       <img
-        draggable='false'
+        draggable="false"
         src={props.side === 'white' ? whiteKing : blackKing}
-        alt=''
+        alt=""
       />
     </div>
   );

@@ -1,19 +1,13 @@
-import { useRef } from 'react';
+import King from './King';
+import Queen from './Queen';
+import Bishop from './Bishop';
+import Knight from './Knight';
+import Rook from './Rook';
 
-import King from './Pieces/King';
-import Queen from './Pieces/Queen';
-import Bishop from './Pieces/Bishop';
-import Knight from './Pieces/Knight';
-import Rook from './Pieces/Rook';
+import './style/Pieces.css';
 
 const Pieces = (props) => {
-  // const piecesRef = useRef();
-
   const { left, top, hold, onClickDown } = props;
-
-  // window.onload = () => {
-  //   getPieces(piecesRef.current);
-  // };
 
   return (
     <>

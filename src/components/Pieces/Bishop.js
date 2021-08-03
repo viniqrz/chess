@@ -1,7 +1,6 @@
 import { useRef } from 'react';
 import whiteBishop from './../../img/whiteBishop.svg';
 import blackBishop from './../../img/blackBishop.svg';
-import './style/Pieces.css';
 
 const Bishop = (props) => {
   const pieceRef = useRef();
@@ -27,9 +26,9 @@ const Bishop = (props) => {
       className={`piece noselect ${props.side}Bishop${props.index}`}
     >
       <img
-        draggable='false'
+        draggable="false"
         src={props.side === 'white' ? whiteBishop : blackBishop}
-        alt=''
+        alt=""
       />
     </div>
   );
