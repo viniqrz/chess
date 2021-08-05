@@ -20,6 +20,7 @@ function Board(props) {
   const [final, setFinal] = useState([0, 0]);
   const [piece, setPiece] = useState({});
   const [map, setMap] = useState(getInitialMap(props.side));
+  const [isChecked, setIsChecked] = useState(false);
 
   const boardRef = useRef();
   const piecesRef = useRef();
@@ -34,6 +35,31 @@ function Board(props) {
   const arrayToIndex = (y, x) => {
     return y * 8 - (8 - [x]) - 1;
   };
+
+  const bloom = () => {
+    const allyKing = [...piecesRef.current.children].find((el) =>
+      el.className.includes(props.side + 'King')
+    );
+
+    const kingCoords = map[props.side + 'King'].coords;
+    const square =
+      boardRef.current.children[arrayToIndex(kingCoords[0], kingCoords[1])];
+
+    const { left: squareLeft, top: squareTop } = square.getBoundingClientRect();
+    const { left: pieceLeft, top: pieceTop } = allyKing.getBoundingClientRect();
+
+    if (squareLeft === pieceLeft && squareTop === pieceTop) {
+      allyKing.style.background =
+        'radial-gradient(circle, rgba(255,0,0,1) 0%, rgba(134,134,134,0) 100%)';
+    } else {
+      allyKing.style.background =
+        'radial-gradient(circle, rgba(255,0,0,1) 0%, rgba(134,134,134,0) 0%)';
+    }
+  };
+
+  if (isChecked) {
+    bloom();
+  }
 
   const displayHint = (legalMoves, show) => {
     legalMoves
@@ -82,6 +108,10 @@ function Board(props) {
   };
 
   const downHandler = (size, e, curPiece) => {
+    if (isChecked && !curPiece.includes(props.side + 'King')) {
+      return;
+    }
+
     setPieceBox(size);
     setHold(true);
 
@@ -110,6 +140,11 @@ function Board(props) {
       if (e.target.parentNode.className.includes(piece.name.slice(0, -1))) {
         e.target.parentNode.style.zIndex = 2;
       }
+
+      // if (isChecked) {
+      //   e.target.parentNode.style.background =
+      //     'radial-gradient(circle, rgba(255,0,0,1) 0%, rgba(134,134,134,0) 0%)';
+      // }
 
       if (piece.legalMoves) {
         displayHint(piece.legalMoves, 1);
@@ -146,6 +181,8 @@ function Board(props) {
   };
 
   const isCheck = () => {
+    if (piece.name.includes(props.side)) return;
+
     const side = piece.name.includes('white') ? 'black' : 'white';
     const kingCoords = map[side + 'King'].coords;
     let pieceName = piece.name;
@@ -162,14 +199,11 @@ function Board(props) {
 
     legalMoves.forEach((move) => {
       if (move[0] === kingCoords[0] && move[1] === kingCoords[1]) {
-        console.log('CHECK!');
         const king = [...piecesRef.current.children].find((el) =>
           el.className.includes(side + 'King')
         );
 
-        king.style.background = 'rgb(255,0,0)';
-        king.style.background =
-          'radial-gradient(circle, rgba(255,0,0,1) 0%, rgba(134,134,134,0) 100%)';
+        setIsChecked(true);
       }
     });
   };
@@ -181,6 +215,9 @@ function Board(props) {
 
     setTimeout(() => {
       targetPiece.parentNode.style.transition = 'none';
+      if (isChecked) {
+        bloom();
+      }
     }, animationTime);
 
     const ilegal = takePiece(finalSquare);
@@ -210,6 +247,10 @@ function Board(props) {
       if (finalSquare !== initial.square) {
         moveSoundRef.current.playbackRate = 3;
         moveSoundRef.current.play();
+
+        if (isChecked && piece.name.includes('King')) {
+          setIsChecked(false);
+        }
       }
     }
   };
