@@ -2,15 +2,15 @@ const usePieces = (boardRef, piecesRef) => {
   const arrangeAllPieces = () => {
     const arrangePiece = (piece, index) => {
       const square = boardRef.current.children[index];
-        const { left: squareLeft, top: squareTop } =
-          square.getBoundingClientRect();
-        piece.style.left = squareLeft + 'px';
-        piece.style.top = squareTop + 'px';
-        piece.style.opacity = 1;
-    }
+      const { left: squareLeft, top: squareTop } =
+        square.getBoundingClientRect();
+      piece.style.left = squareLeft + 'px';
+      piece.style.top = squareTop + 'px';
+      piece.style.opacity = 1;
+    };
 
     const pieces = [...piecesRef.current.children];
-    
+
     pieces.forEach((piece) => {
       if (piece.className.includes('white')) {
         if (piece.className.includes('whiteKing')) {
@@ -22,22 +22,22 @@ const usePieces = (boardRef, piecesRef) => {
         }
 
         if (piece.className.includes('whiteBishop')) {
-          const pieceIndexEqualsToOne = (piece.className.includes('1'));
+          const pieceIndexEqualsToOne = piece.className.includes('1');
           arrangePiece(piece, pieceIndexEqualsToOne ? 61 : 58);
         }
 
         if (piece.className.includes('whiteKnight')) {
-          const pieceIndexEqualsToOne = (piece.className.includes('1'));
+          const pieceIndexEqualsToOne = piece.className.includes('1');
           arrangePiece(piece, pieceIndexEqualsToOne ? 62 : 57);
         }
 
         if (piece.className.includes('whiteBishop')) {
-          const pieceIndexEqualsToOne = (piece.className.includes('1'));
+          const pieceIndexEqualsToOne = piece.className.includes('1');
           arrangePiece(piece, pieceIndexEqualsToOne ? 61 : 58);
         }
 
         if (piece.className.includes('whiteRook')) {
-          const pieceIndexEqualsToOne = (piece.className.includes('1'));
+          const pieceIndexEqualsToOne = piece.className.includes('1');
           arrangePiece(piece, pieceIndexEqualsToOne ? 63 : 56);
         }
       }
@@ -52,17 +52,17 @@ const usePieces = (boardRef, piecesRef) => {
         }
 
         if (piece.className.includes('blackBishop')) {
-          const pieceIndexEqualsToOne = (piece.className.includes('1'));
+          const pieceIndexEqualsToOne = piece.className.includes('1');
           arrangePiece(piece, pieceIndexEqualsToOne ? 5 : 2);
         }
 
         if (piece.className.includes('blackKnight')) {
-          const pieceIndexEqualsToOne = (piece.className.includes('1'));
+          const pieceIndexEqualsToOne = piece.className.includes('1');
           arrangePiece(piece, pieceIndexEqualsToOne ? 6 : 1);
         }
 
         if (piece.className.includes('blackRook')) {
-          const pieceIndexEqualsToOne = (piece.className.includes('1'));
+          const pieceIndexEqualsToOne = piece.className.includes('1');
           arrangePiece(piece, pieceIndexEqualsToOne ? 7 : 0);
         }
       }
@@ -74,6 +74,6 @@ const usePieces = (boardRef, piecesRef) => {
 
     window.addEventListener('resize', arrangeAllPieces);
   };
-}
+};
 
 export default usePieces;

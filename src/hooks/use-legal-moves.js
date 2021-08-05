@@ -1,5 +1,46 @@
 const useLegalMoves = () => {
-  return (curPiece, curPosition) => {
+  return (curPiece, curPosition, boardRef, piecesRef) => {
+    const arrayToIndex = (y, x) => {
+      return y * 8 - (8 - [x]) - 1;
+    };
+
+    const checkPiecesAhead = (initLegalMoves) => {
+      const pieces = Array.from(piecesRef.current.children);
+      const squares = Array.from(boardRef.current.children);
+      let newArr = initLegalMoves;
+      let cleanedLines = [];
+
+      initLegalMoves.forEach((legalSquare) => {
+        const index = arrayToIndex(legalSquare[0], legalSquare[1]);
+        const { left, top } = squares[index].getBoundingClientRect();
+        const foundCleanedLine = cleanedLines.find(
+          (el) => el === legalSquare[2]
+        );
+
+        if (foundCleanedLine === -1 || foundCleanedLine === undefined) {
+          pieces.forEach((piece) => {
+            const { left: pieceLeft, top: pieceTop } =
+              piece.getBoundingClientRect();
+            if (left === pieceLeft && top === pieceTop) {
+              const legalIndex = newArr.findIndex(
+                (el) => el[0] === legalSquare[0] && el[1] === legalSquare[1]
+              );
+              const filteredNewArr = newArr.filter((move, i) => {
+                if (move[2] === legalSquare[2] && i > legalIndex) {
+                  cleanedLines.push(move[2]);
+                }
+                return !(move[2] === legalSquare[2] && i > legalIndex);
+              });
+
+              newArr = filteredNewArr;
+            }
+          });
+        }
+      });
+
+      return newArr;
+    };
+
     let movesArr = [];
 
     const getLine0deg = (init, prevArr = null) => {
@@ -134,6 +175,8 @@ const useLegalMoves = () => {
       movesArr = getLine270deg(curPosition, movesArr);
       movesArr = getLine315deg(curPosition, movesArr);
 
+      movesArr = checkPiecesAhead(movesArr);
+
       return movesArr;
     }
 
@@ -142,6 +185,8 @@ const useLegalMoves = () => {
       movesArr = getLine135deg(curPosition, movesArr);
       movesArr = getLine225deg(curPosition, movesArr);
       movesArr = getLine315deg(curPosition, movesArr);
+
+      movesArr = checkPiecesAhead(movesArr);
 
       return movesArr;
     }
@@ -175,6 +220,8 @@ const useLegalMoves = () => {
       movesArr = getLine90deg(curPosition, movesArr);
       movesArr = getLine180deg(curPosition, movesArr);
       movesArr = getLine270deg(curPosition, movesArr);
+
+      movesArr = checkPiecesAhead(movesArr);
 
       return movesArr;
     }

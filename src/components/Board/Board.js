@@ -11,7 +11,7 @@ import useLegalMoves from './../../hooks/use-legal-moves';
 
 import Pieces from './../Pieces/Pieces.js';
 
-function Board() {
+function Board(props) {
   const [pieceBox, setPieceBox] = useState(0);
   const [hold, setHold] = useState(false);
   const [left, setLeft] = useState({});
@@ -19,7 +19,7 @@ function Board() {
   const [initial, setInitial] = useState({});
   const [final, setFinal] = useState([0, 0]);
   const [piece, setPiece] = useState({});
-  const [map, setMap] = useState(getInitialMap('white'));
+  const [map, setMap] = useState(getInitialMap(props.side));
 
   const boardRef = useRef();
   const piecesRef = useRef();
@@ -87,15 +87,7 @@ function Board() {
 
     const square = getSquare(e);
     const coords = getCoords(square, 0);
-    let legalMoves = getLegalMoves(curPiece, coords);
-
-    if (
-      curPiece.includes('Queen') ||
-      curPiece.includes('Rook') ||
-      curPiece.includes('Bishop')
-    ) {
-      legalMoves = checkPiecesAhead(legalMoves);
-    }
+    const legalMoves = getLegalMoves(curPiece, coords, boardRef, piecesRef);
 
     setPiece({
       name: curPiece,
@@ -153,39 +145,33 @@ function Board() {
     return ilegal;
   };
 
-  const checkPiecesAhead = (initLegalMoves) => {
-    const pieces = Array.from(piecesRef.current.children);
-    const squares = Array.from(boardRef.current.children);
-    let newArr = initLegalMoves;
-    let cleanedLines = [];
+  const isCheck = () => {
+    const side = piece.name.includes('white') ? 'black' : 'white';
+    const kingCoords = map[side + 'King'].coords;
+    let pieceName = piece.name;
+    let coords;
 
-    initLegalMoves.forEach((legalSquare) => {
-      const index = arrayToIndex(legalSquare[0], legalSquare[1]);
-      const { left, top } = squares[index].getBoundingClientRect();
-      const foundCleanedLine = cleanedLines.find((el) => el === legalSquare[2]);
+    if (piece.name.includes('1') || piece.name.includes('0')) {
+      pieceName = piece.name.slice(0, piece.name.length - 1);
+      coords = map[pieceName][piece.name[piece.name.length - 1] * 1].coords;
+    } else {
+      coords = map[pieceName].coords;
+    }
 
-      if (foundCleanedLine === -1 || foundCleanedLine === undefined) {
-        pieces.forEach((piece) => {
-          const { left: pieceLeft, top: pieceTop } =
-            piece.getBoundingClientRect();
-          if (left === pieceLeft && top === pieceTop) {
-            const legalIndex = newArr.findIndex(
-              (el) => el[0] === legalSquare[0] && el[1] === legalSquare[1]
-            );
-            const filteredNewArr = newArr.filter((move, i) => {
-              if (move[2] === legalSquare[2] && i > legalIndex) {
-                cleanedLines.push(move[2]);
-              }
-              return !(move[2] === legalSquare[2] && i > legalIndex);
-            });
+    const legalMoves = getLegalMoves(pieceName, coords, boardRef, piecesRef);
 
-            newArr = filteredNewArr;
-          }
-        });
+    legalMoves.forEach((move) => {
+      if (move[0] === kingCoords[0] && move[1] === kingCoords[1]) {
+        console.log('CHECK!');
+        const king = [...piecesRef.current.children].find((el) =>
+          el.className.includes(side + 'King')
+        );
+
+        king.style.background = 'rgb(255,0,0)';
+        king.style.background =
+          'radial-gradient(circle, rgba(255,0,0,1) 0%, rgba(134,134,134,0) 100%)';
       }
     });
-
-    return newArr;
   };
 
   const makeMove = (finalSquare, targetPiece) => {
@@ -248,12 +234,18 @@ function Board() {
     const square = getSquare(e);
 
     makeMove(square, e.target);
+
+    isCheck();
+  };
+
+  const contextMenuHandler = (e) => {
+    e.preventDefault();
   };
 
   return (
     <div onMouseUp={upHandler} onMouseMove={moveHandler} className="Board">
       <audio ref={moveSoundRef} src={moveSfx}></audio>
-      <div className="board-container">
+      <div className="board-container" onContextMenu={contextMenuHandler}>
         <div style={{ flexDirection: 'row' }} className="upper-coords">
           <p>A</p>
           <p>B</p>
