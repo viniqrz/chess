@@ -36,11 +36,19 @@ function Board(props) {
     return y * 8 - (8 - [x]) - 1;
   };
 
-  const bloom = () => {
+  const clearBloom = () => {
     const allyKing = [...piecesRef.current.children].find((el) =>
       el.className.includes(props.side + 'King')
     );
 
+    allyKing.style.background =
+      'radial-gradient(circle, rgba(255,0,0,1) 0%, rgba(134,134,134,0) 0%)';
+  };
+
+  const bloom = () => {
+    const allyKing = [...piecesRef.current.children].find((el) =>
+      el.className.includes(props.side + 'King')
+    );
     const kingCoords = map[props.side + 'King'].coords;
     const square =
       boardRef.current.children[arrayToIndex(kingCoords[0], kingCoords[1])];
@@ -52,8 +60,7 @@ function Board(props) {
       allyKing.style.background =
         'radial-gradient(circle, rgba(255,0,0,1) 0%, rgba(134,134,134,0) 100%)';
     } else {
-      allyKing.style.background =
-        'radial-gradient(circle, rgba(255,0,0,1) 0%, rgba(134,134,134,0) 0%)';
+      clearBloom();
     }
   };
 
@@ -71,7 +78,7 @@ function Board(props) {
       });
   };
 
-  const getSquare = (e) => {
+  const getSquareOfCursor = (e) => {
     const squaresArr = Array.from(boardRef.current.children);
     let element;
 
@@ -115,7 +122,7 @@ function Board(props) {
     setPieceBox(size);
     setHold(true);
 
-    const square = getSquare(e);
+    const square = getSquareOfCursor(e);
     const coords = getCoords(square, 0);
     const legalMoves = getLegalMoves(curPiece, coords, boardRef, piecesRef);
 
@@ -141,14 +148,9 @@ function Board(props) {
         e.target.parentNode.style.zIndex = 2;
       }
 
-      // if (isChecked) {
-      //   e.target.parentNode.style.background =
-      //     'radial-gradient(circle, rgba(255,0,0,1) 0%, rgba(134,134,134,0) 0%)';
-      // }
-
       if (piece.legalMoves) {
         displayHint(piece.legalMoves, 1);
-        const square = getSquare(e);
+        const square = getSquareOfCursor(e);
         getCoords(square, 1);
       }
     }
@@ -199,10 +201,6 @@ function Board(props) {
 
     legalMoves.forEach((move) => {
       if (move[0] === kingCoords[0] && move[1] === kingCoords[1]) {
-        const king = [...piecesRef.current.children].find((el) =>
-          el.className.includes(side + 'King')
-        );
-
         setIsChecked(true);
       }
     });
@@ -210,6 +208,8 @@ function Board(props) {
 
   const makeMove = (finalSquare, targetPiece) => {
     const animationTime = 100;
+
+    const ilegal = takePiece(finalSquare);
 
     targetPiece.parentNode.style.transition = 'all ' + animationTime + 'ms';
 
@@ -219,8 +219,6 @@ function Board(props) {
         bloom();
       }
     }, animationTime);
-
-    const ilegal = takePiece(finalSquare);
 
     if (ilegal) {
       const { left, top } = initial.square.getBoundingClientRect();
@@ -250,6 +248,9 @@ function Board(props) {
 
         if (isChecked && piece.name.includes('King')) {
           setIsChecked(false);
+          setTimeout(() => {
+            clearBloom();
+          }, animationTime + 1);
         }
       }
     }
@@ -272,7 +273,7 @@ function Board(props) {
       return;
     }
 
-    const square = getSquare(e);
+    const square = getSquareOfCursor(e);
 
     makeMove(square, e.target);
 
