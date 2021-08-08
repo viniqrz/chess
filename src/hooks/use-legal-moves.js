@@ -1,5 +1,5 @@
 const useLegalMoves = () => {
-  return (curPiece, curPosition, boardRef, piecesRef) => {
+  return (curPiece, curPosition, boardRef, piecesRef, map) => {
     const arrayToIndex = (y, x) => {
       return y * 8 - (8 - [x]) - 1;
     };
@@ -224,37 +224,43 @@ const useLegalMoves = () => {
         }
       }
 
-      // const pieces = Array.from(piecesRef.current.children);
+      const pieces = Array.from(piecesRef.current.children);
 
-      // movesArr.filter((move) => {
-      //   pieces.forEach((piece) => {
-      //     let pieceName = piece.id;
-      //     let index;
+      const side = curPiece.includes('white') ? 'white' : 'black';
 
-      //     if (pieceName.includes('0') || pieceName.includes('1')) {
-      //       index = pieceName[pieceName.length - 1];
-      //       pieceName = pieceName.slice(0, -1);
-      //     }
+      let filteredMovesArr = [];
 
-      //     if (pieceName.includes('Queen')) {
-      //       return getQueenMoves();
-      //     }
+      movesArr.forEach((move) => {
+        let moveIsIlegal = false;
+        pieces.forEach((piece) => {
+          if (moveIsIlegal) return;
 
-      //     if (pieceName.includes('Bishop')) {
-      //       return getBishopMoves();
-      //     }
+          let pieceName = piece.id;
+          let index;
 
-      //     if (pieceName.includes('Knight')) {
-      //       return getKnightMoves();
-      //     }
+          if (pieceName.includes(side)) return;
 
-      //     if (pieceName.includes('Rook')) {
-      //       return getRookMoves();
-      //     }
-      //   });
-      // });
+          if (pieceName.includes('0') || pieceName.includes('1')) {
+            index = pieceName[pieceName.length - 1];
+            pieceName = pieceName.slice(0, -1);
+            map[pieceName][index].legalMoves.forEach((el) => {
+              if (el[0] === move[0] && el[1] === move[1]) {
+                moveIsIlegal = true;
+              }
+            });
+          } else {
+            map[pieceName].legalMoves.forEach((el) => {
+              if (el[0] === move[0] && el[1] === move[1]) {
+                moveIsIlegal = true;
+              }
+            });
+          }
+        });
 
-      return movesArr;
+        if (!moveIsIlegal) filteredMovesArr.push(move);
+      });
+
+      return filteredMovesArr;
     }
 
     if (curPiece.includes('Queen')) {
