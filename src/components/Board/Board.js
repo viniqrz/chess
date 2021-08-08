@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 import './Board.css';
 
@@ -31,6 +31,10 @@ function Board(props) {
   const getLegalMoves = useLegalMoves();
 
   usePieces(boardRef, piecesRef);
+
+  // useEffect(() => {
+  //   console.log(map);
+  // }, [map]);
 
   const arrayToIndex = (y, x) => {
     return y * 8 - (8 - [x]) - 1;
@@ -241,8 +245,20 @@ function Board(props) {
         const name = piece.name.slice(0, -1);
 
         newMap[name][index].coords = final;
+        newMap[name][index].legalMoves = getLegalMoves(
+          name,
+          final,
+          boardRef,
+          piecesRef
+        );
       } else {
         newMap[piece.name].coords = final;
+        newMap[piece.name].legalMoves = getLegalMoves(
+          piece.name,
+          final,
+          boardRef,
+          piecesRef
+        );
       }
 
       setMap(newMap);

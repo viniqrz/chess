@@ -74,7 +74,8 @@ const useLegalMoves = () => {
       let y = init[0];
       for (let x = init[1] + 1; x <= 8; x++) {
         const possible = [y, x, '90'];
-        movesArr.push(possible);
+        arr.push(possible);
+        if (prevArr) prevArr.push(possible);
       }
 
       return prevArr || arr;
@@ -99,7 +100,7 @@ const useLegalMoves = () => {
       let x = init[1];
       for (let y = init[0] + 1; y <= 8; y++) {
         const possible = [y, x, '180'];
-        movesArr.push(possible);
+        arr.push(possible);
         if (prevArr) prevArr.push(possible);
       }
 
@@ -125,8 +126,8 @@ const useLegalMoves = () => {
       let y = init[0];
       for (let x = init[1] - 1; x > 0; x--) {
         const possible = [y, x, '270'];
-        movesArr.push(possible);
-        if (prevArr) init.push(possible);
+        arr.push(possible);
+        if (prevArr) prevArr.push(possible);
       }
 
       return prevArr || arr;
