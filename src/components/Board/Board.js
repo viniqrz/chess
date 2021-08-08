@@ -37,27 +37,28 @@ function Board(props) {
   };
 
   const clearBloom = () => {
-    const allyKing = [...piecesRef.current.children].find((el) =>
-      el.className.includes(props.side + 'King')
+    const checkedKing = [...piecesRef.current.children].find((el) =>
+      el.className.includes(isChecked + 'King')
     );
 
-    allyKing.style.background =
+    checkedKing.style.background =
       'radial-gradient(circle, rgba(255,0,0,1) 0%, rgba(134,134,134,0) 0%)';
   };
 
   const bloom = () => {
-    const allyKing = [...piecesRef.current.children].find((el) =>
-      el.className.includes(props.side + 'King')
+    const checkedKing = [...piecesRef.current.children].find((el) =>
+      el.className.includes(isChecked + 'King')
     );
-    const kingCoords = map[props.side + 'King'].coords;
+    const kingCoords = map[isChecked + 'King'].coords;
     const square =
       boardRef.current.children[arrayToIndex(kingCoords[0], kingCoords[1])];
 
     const { left: squareLeft, top: squareTop } = square.getBoundingClientRect();
-    const { left: pieceLeft, top: pieceTop } = allyKing.getBoundingClientRect();
+    const { left: pieceLeft, top: pieceTop } =
+      checkedKing.getBoundingClientRect();
 
     if (squareLeft === pieceLeft && squareTop === pieceTop) {
-      allyKing.style.background =
+      checkedKing.style.background =
         'radial-gradient(circle, rgba(255,0,0,1) 0%, rgba(134,134,134,0) 100%)';
     } else {
       clearBloom();
@@ -115,7 +116,10 @@ function Board(props) {
   };
 
   const downHandler = (size, e, curPiece) => {
-    if (isChecked && !curPiece.includes(props.side + 'King')) {
+    if (
+      curPiece.includes(isChecked) &&
+      !curPiece.includes(isChecked + 'King')
+    ) {
       return;
     }
 
@@ -183,10 +187,11 @@ function Board(props) {
   };
 
   const isCheck = () => {
-    if (piece.name.includes(props.side)) return;
+    const kingSide = piece.name.includes('white') ? 'black' : 'white';
 
-    const side = piece.name.includes('white') ? 'black' : 'white';
-    const kingCoords = map[side + 'King'].coords;
+    if (piece.name.includes(kingSide)) return;
+
+    const kingCoords = map[kingSide + 'King'].coords;
     let pieceName = piece.name;
     let coords;
 
@@ -201,7 +206,7 @@ function Board(props) {
 
     legalMoves.forEach((move) => {
       if (move[0] === kingCoords[0] && move[1] === kingCoords[1]) {
-        setIsChecked(true);
+        setIsChecked(kingSide);
       }
     });
   };
@@ -256,6 +261,14 @@ function Board(props) {
     }
   };
 
+  const isMoveLegal = () => {
+    const legalIndex = piece.legalMoves.findIndex((legalMove) => {
+      return legalMove[0] === final[0] && legalMove[1] === final[1];
+    });
+
+    return !(legalIndex === -1);
+  };
+
   const upHandler = (e) => {
     if (!hold) return;
     setHold(false);
@@ -264,11 +277,9 @@ function Board(props) {
 
     displayHint(piece.legalMoves, 0);
 
-    const legalIndex = piece.legalMoves.findIndex((legalMove) => {
-      return legalMove[0] === final[0] && legalMove[1] === final[1];
-    });
+    const legal = isMoveLegal();
 
-    if (legalIndex === -1) {
+    if (!legal) {
       makeMove(initial.square, e.target);
       return;
     }
