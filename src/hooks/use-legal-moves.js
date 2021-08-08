@@ -146,54 +146,46 @@ const useLegalMoves = () => {
       return prevArr || arr;
     };
 
-    if (curPiece.includes('King')) {
-      for (let y = curPosition[0] - 1; y <= curPosition[0] + 1; y++) {
-        for (let x = curPosition[1] - 1; x <= curPosition[1] + 1; x++) {
-          const possible = [y, x];
-          let isEqual = false;
-
-          if (y === curPosition[0] && x === curPosition[1]) {
-            isEqual = true;
-          }
-
-          if (y >= 1 && y <= 8 && x >= 1 && x <= 8 && !isEqual) {
-            movesArr.push(possible);
-          }
-        }
-      }
-
-      return movesArr;
-    }
-
-    if (curPiece.includes('Queen')) {
-      movesArr = getLine0deg(curPosition, movesArr);
-      movesArr = getLine45deg(curPosition, movesArr);
-      movesArr = getLine90deg(curPosition, movesArr);
-      movesArr = getLine135deg(curPosition, movesArr);
-      movesArr = getLine180deg(curPosition, movesArr);
-      movesArr = getLine225deg(curPosition, movesArr);
-      movesArr = getLine270deg(curPosition, movesArr);
-      movesArr = getLine315deg(curPosition, movesArr);
+    const getQueenMoves = (init) => {
+      movesArr = getLine0deg(init, movesArr);
+      movesArr = getLine45deg(init, movesArr);
+      movesArr = getLine90deg(init, movesArr);
+      movesArr = getLine135deg(init, movesArr);
+      movesArr = getLine180deg(init, movesArr);
+      movesArr = getLine225deg(init, movesArr);
+      movesArr = getLine270deg(init, movesArr);
+      movesArr = getLine315deg(init, movesArr);
 
       movesArr = checkPiecesAhead(movesArr);
 
       return movesArr;
-    }
+    };
 
-    if (curPiece.includes('Bishop')) {
-      movesArr = getLine45deg(curPosition, movesArr);
-      movesArr = getLine135deg(curPosition, movesArr);
-      movesArr = getLine225deg(curPosition, movesArr);
-      movesArr = getLine315deg(curPosition, movesArr);
+    const getBishopMoves = (init) => {
+      movesArr = getLine45deg(init, movesArr);
+      movesArr = getLine135deg(init, movesArr);
+      movesArr = getLine225deg(init, movesArr);
+      movesArr = getLine315deg(init, movesArr);
 
       movesArr = checkPiecesAhead(movesArr);
 
       return movesArr;
-    }
+    };
 
-    if (curPiece.includes('Knight')) {
-      const y0 = curPosition[0];
-      const x0 = curPosition[1];
+    const getRookMoves = (init) => {
+      movesArr = getLine0deg(init, movesArr);
+      movesArr = getLine90deg(init, movesArr);
+      movesArr = getLine180deg(init, movesArr);
+      movesArr = getLine270deg(init, movesArr);
+
+      movesArr = checkPiecesAhead(movesArr);
+
+      return movesArr;
+    };
+
+    const getKnightMoves = (init) => {
+      const y0 = init[0];
+      const x0 = init[1];
       for (let y = y0 - 2; y < 9 && y <= y0 + 2; y += 4) {
         if (y < 1) continue;
         for (let x = x0 - 1; x < 9 && x <= x0 + 1; x += 2) {
@@ -213,17 +205,71 @@ const useLegalMoves = () => {
         }
       }
       return movesArr;
+    };
+
+    if (curPiece.includes('King')) {
+      for (let y = curPosition[0] - 1; y <= curPosition[0] + 1; y++) {
+        for (let x = curPosition[1] - 1; x <= curPosition[1] + 1; x++) {
+          const possible = [y, x];
+          let isEqual = false;
+
+          if (y === curPosition[0] && x === curPosition[1]) {
+            isEqual = true;
+          }
+
+          if (y >= 1 && y <= 8 && x >= 1 && x <= 8 && !isEqual) {
+            movesArr.push(possible);
+          }
+        }
+      }
+
+      // const pieces = Array.from(piecesRef.current.children);
+
+      // movesArr.filter((move) => {
+      //   pieces.forEach((piece) => {
+      //     let pieceName = piece.id;
+      //     let index;
+
+      //     if (pieceName.includes('0') || pieceName.includes('1')) {
+      //       index = pieceName[pieceName.length - 1];
+      //       pieceName = pieceName.slice(0, -1);
+      //     }
+
+      //     if (pieceName.includes('Queen')) {
+      //       return getQueenMoves();
+      //     }
+
+      //     if (pieceName.includes('Bishop')) {
+      //       return getBishopMoves();
+      //     }
+
+      //     if (pieceName.includes('Knight')) {
+      //       return getKnightMoves();
+      //     }
+
+      //     if (pieceName.includes('Rook')) {
+      //       return getRookMoves();
+      //     }
+      //   });
+      // });
+
+      return movesArr;
+    }
+
+    if (curPiece.includes('Queen')) {
+      return getQueenMoves(curPosition);
+    }
+
+    if (curPiece.includes('Bishop')) {
+      return getBishopMoves(curPosition);
+    }
+
+    if (curPiece.includes('Knight')) {
+      return getKnightMoves(curPosition);
     }
 
     if (curPiece.includes('Rook')) {
-      movesArr = getLine0deg(curPosition, movesArr);
-      movesArr = getLine90deg(curPosition, movesArr);
-      movesArr = getLine180deg(curPosition, movesArr);
-      movesArr = getLine270deg(curPosition, movesArr);
-
-      movesArr = checkPiecesAhead(movesArr);
-
-      return movesArr;
+      return getRookMoves(curPosition);
     }
   };
 };

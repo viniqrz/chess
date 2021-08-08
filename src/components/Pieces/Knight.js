@@ -25,11 +25,12 @@ const Knight = (props) => {
       ref={pieceRef}
       onMouseDown={clickDownHandler}
       className={`piece noselect ${props.side}Knight${props.index}`}
+      id={`${props.side}Knight${props.index}`}
     >
       <img
-        draggable='false'
+        draggable="false"
         src={props.side === 'white' ? whiteKnight : blackKnight}
-        alt=''
+        alt=""
       />
     </div>
   );

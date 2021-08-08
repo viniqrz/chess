@@ -21,11 +21,12 @@ const Queen = (props) => {
       ref={pieceRef}
       onMouseDown={clickDownHandler}
       className={`piece ${props.side}Queen noselect`}
+      id={`${props.side}Queen`}
     >
       <img
-        draggable='false'
+        draggable="false"
         src={props.side === 'white' ? whiteQueen : blackQueen}
-        alt=''
+        alt=""
       />
     </div>
   );

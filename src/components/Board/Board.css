@@ -24,6 +24,7 @@
 .upper-coords,
 .side-coords {
   background-color: rgb(117, 116, 114);
+  color: whitesmoke;
 }
 
 .upper-coords {
