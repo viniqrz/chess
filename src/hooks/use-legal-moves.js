@@ -1,5 +1,7 @@
 const useLegalMoves = () => {
   return (curPiece, curPosition, boardRef, piecesRef, map) => {
+    const side = curPiece.includes('white') ? 'white' : 'black';
+
     const arrayToIndex = (y, x) => {
       return y * 8 - (8 - [x]) - 1;
     };
@@ -21,15 +23,23 @@ const useLegalMoves = () => {
           pieces.forEach((piece) => {
             const { left: pieceLeft, top: pieceTop } =
               piece.getBoundingClientRect();
+
             if (left === pieceLeft && top === pieceTop) {
               const legalIndex = newArr.findIndex(
                 (el) => el[0] === legalSquare[0] && el[1] === legalSquare[1]
               );
               const filteredNewArr = newArr.filter((move, i) => {
-                if (move[2] === legalSquare[2] && i > legalIndex) {
-                  cleanedLines.push(move[2]);
+                if (piece.id.includes(side)) {
+                  if (move[2] === legalSquare[2] && i >= legalIndex) {
+                    cleanedLines.push(move[2]);
+                  }
+                  return !(move[2] === legalSquare[2] && i >= legalIndex);
+                } else {
+                  if (move[2] === legalSquare[2] && i > legalIndex) {
+                    cleanedLines.push(move[2]);
+                  }
+                  return !(move[2] === legalSquare[2] && i > legalIndex);
                 }
-                return !(move[2] === legalSquare[2] && i > legalIndex);
               });
 
               newArr = filteredNewArr;
@@ -225,8 +235,6 @@ const useLegalMoves = () => {
       }
 
       const pieces = Array.from(piecesRef.current.children);
-
-      const side = curPiece.includes('white') ? 'white' : 'black';
 
       let filteredMovesArr = [];
 

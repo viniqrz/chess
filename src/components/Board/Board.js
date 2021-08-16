@@ -32,6 +32,20 @@ function Board(props) {
 
   usePieces(boardRef, piecesRef);
 
+  if (isChecked) {
+    const { coords } = map[isChecked + 'King'];
+
+    const legalMoves = getLegalMoves(
+      isChecked + 'King',
+      coords,
+      boardRef,
+      piecesRef,
+      map
+    );
+
+    console.log(legalMoves);
+  }
+
   const arrayToIndex = (y, x) => {
     return y * 8 - (8 - [x]) - 1;
   };
@@ -136,10 +150,13 @@ function Board(props) {
       map
     );
 
+    // console.log(legalMoves);
+
     setPiece({
       name: curPiece,
       legalMoves,
       side: e.target.parentNode.className.includes('white') ? 'white' : 'black',
+      element: e.target.parentNode,
     });
   };
 
@@ -166,7 +183,13 @@ function Board(props) {
     }
   };
 
-  const takePiece = (square) => {
+  const isIlegal = (square) => {
+    const legalIndex = piece.legalMoves.findIndex((legalMove) => {
+      return legalMove[0] === final[0] && legalMove[1] === final[1];
+    });
+
+    if (legalIndex === -1) return true;
+
     const { left, top } = square.getBoundingClientRect();
 
     let ilegal = false;
@@ -226,12 +249,13 @@ function Board(props) {
   const makeMove = (finalSquare, targetPiece) => {
     const animationTime = 100;
 
-    const ilegal = takePiece(finalSquare);
+    const ilegal = isIlegal(finalSquare);
 
     targetPiece.parentNode.style.transition = 'all ' + animationTime + 'ms';
 
     setTimeout(() => {
       targetPiece.parentNode.style.transition = 'none';
+
       if (isChecked) {
         bloom();
       }
@@ -277,6 +301,8 @@ function Board(props) {
         moveSoundRef.current.playbackRate = 3;
         moveSoundRef.current.play();
 
+        console.log(1);
+
         if (isChecked && piece.name.includes('King')) {
           setIsChecked(false);
           setTimeout(() => {
@@ -287,28 +313,14 @@ function Board(props) {
     }
   };
 
-  const isMoveLegal = () => {
-    const legalIndex = piece.legalMoves.findIndex((legalMove) => {
-      return legalMove[0] === final[0] && legalMove[1] === final[1];
-    });
-
-    return !(legalIndex === -1);
-  };
-
   const upHandler = (e) => {
     if (!hold) return;
+
     setHold(false);
 
-    e.target.parentNode.style.zIndex = 1;
+    piece.element.style.zIndex = 1;
 
     displayHint(piece.legalMoves, 0);
-
-    const legal = isMoveLegal();
-
-    if (!legal) {
-      makeMove(initial.square, e.target);
-      return;
-    }
 
     const square = getSquareOfCursor(e);
 
