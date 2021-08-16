@@ -32,7 +32,7 @@ function Board(props) {
 
   usePieces(boardRef, piecesRef);
 
-  if (isChecked) {
+  if (isChecked && piece.name.includes(isChecked + 'King')) {
     const { coords } = map[isChecked + 'King'];
 
     const legalMoves = getLegalMoves(
@@ -129,60 +129,6 @@ function Board(props) {
     return curPosition;
   };
 
-  const downHandler = (size, e, curPiece) => {
-    if (
-      curPiece.includes(isChecked) &&
-      !curPiece.includes(isChecked + 'King')
-    ) {
-      return;
-    }
-
-    setPieceBox(size);
-    setHold(true);
-
-    const square = getSquareOfCursor(e);
-    const coords = getCoords(square, 0);
-    const legalMoves = getLegalMoves(
-      curPiece,
-      coords,
-      boardRef,
-      piecesRef,
-      map
-    );
-
-    // console.log(legalMoves);
-
-    setPiece({
-      name: curPiece,
-      legalMoves,
-      side: e.target.parentNode.className.includes('white') ? 'white' : 'black',
-      element: e.target.parentNode,
-    });
-  };
-
-  const moveHandler = (e) => {
-    if (hold) {
-      const objLeft = {};
-      const objTop = {};
-
-      objLeft[piece.name] = e.clientX - pieceBox / 2;
-      objTop[piece.name] = e.clientY - pieceBox / 2;
-
-      setLeft(objLeft);
-      setTop(objTop);
-
-      if (e.target.parentNode.className.includes(piece.name.slice(0, -1))) {
-        e.target.parentNode.style.zIndex = 2;
-      }
-
-      if (piece.legalMoves) {
-        displayHint(piece.legalMoves, 1);
-        const square = getSquareOfCursor(e);
-        getCoords(square, 1);
-      }
-    }
-  };
-
   const isIlegal = (square) => {
     const legalIndex = piece.legalMoves.findIndex((legalMove) => {
       return legalMove[0] === final[0] && legalMove[1] === final[1];
@@ -246,20 +192,50 @@ function Board(props) {
     });
   };
 
-  const makeMove = (finalSquare, targetPiece) => {
-    const animationTime = 100;
+  const updateMap = () => {
+    const newMap = { ...map };
 
-    const ilegal = isIlegal(finalSquare);
+    if (piece.name.includes('1') || piece.name.includes('0')) {
+      const index = piece.name[piece.name.length - 1] * 1;
+      const name = piece.name.slice(0, -1);
 
-    targetPiece.parentNode.style.transition = 'all ' + animationTime + 'ms';
+      newMap[name][index].coords = final;
+      newMap[name][index].legalMoves = getLegalMoves(
+        name,
+        final,
+        boardRef,
+        piecesRef,
+        map
+      );
+    } else {
+      newMap[piece.name].coords = final;
+      newMap[piece.name].legalMoves = getLegalMoves(
+        piece.name,
+        final,
+        boardRef,
+        piecesRef,
+        map
+      );
+    }
+
+    setMap(newMap);
+  }
+
+  const slidePiece = (targetPiece, duration, ilegal) => {
+    targetPiece.parentNode.style.transition = 'all ' + duration + 'ms';
 
     setTimeout(() => {
       targetPiece.parentNode.style.transition = 'none';
-
-      if (isChecked) {
+      if (isChecked && ilegal) {
         bloom();
       }
-    }, animationTime);
+    }, duration);
+  }
+
+  const makeMove = (finalSquare, targetPiece) => {
+    const ilegal = isIlegal(finalSquare);
+
+    slidePiece(targetPiece, 100, ilegal);
 
     if (ilegal) {
       const { left, top } = initial.square.getBoundingClientRect();
@@ -270,45 +246,67 @@ function Board(props) {
       targetPiece.parentNode.style.left = left + 'px';
       targetPiece.parentNode.style.top = top + 'px';
 
-      const newMap = { ...map };
+      updateMap();
 
-      if (piece.name.includes('1') || piece.name.includes('0')) {
-        const index = piece.name[piece.name.length - 1] * 1;
-        const name = piece.name.slice(0, -1);
+      moveSoundRef.current.playbackRate = 3;
+      moveSoundRef.current.play();
 
-        newMap[name][index].coords = final;
-        newMap[name][index].legalMoves = getLegalMoves(
-          name,
-          final,
-          boardRef,
-          piecesRef,
-          map
-        );
-      } else {
-        newMap[piece.name].coords = final;
-        newMap[piece.name].legalMoves = getLegalMoves(
-          piece.name,
-          final,
-          boardRef,
-          piecesRef,
-          map
-        );
+      if (isChecked && piece.name.includes('King')) {
+        setIsChecked(false);
+      }
+    }
+  };
+
+  const downHandler = (size, e, curPiece) => {
+    if (
+      curPiece.includes(isChecked) &&
+      !curPiece.includes(isChecked + 'King')
+    ) {
+      return;
+    }
+
+    setPieceBox(size);
+    setHold(true);
+
+    // console.log(map[curPiece].legalMoves);
+
+    const square = getSquareOfCursor(e);
+    const coords = getCoords(square, 0);
+    const legalMoves = getLegalMoves(
+      curPiece,
+      coords,
+      boardRef,
+      piecesRef,
+      map
+    );
+
+    setPiece({
+      name: curPiece,
+      legalMoves,
+      side: e.target.parentNode.className.includes('white') ? 'white' : 'black',
+      element: e.target.parentNode,
+    });
+  };
+
+  const moveHandler = (e) => {
+    if (hold) {
+      const objLeft = {};
+      const objTop = {};
+
+      objLeft[piece.name] = e.clientX - pieceBox / 2;
+      objTop[piece.name] = e.clientY - pieceBox / 2;
+
+      setLeft(objLeft);
+      setTop(objTop);
+
+      if (e.target.parentNode.className.includes(piece.name.slice(0, -1))) {
+        e.target.parentNode.style.zIndex = 2;
       }
 
-      setMap(newMap);
-
-      if (finalSquare !== initial.square) {
-        moveSoundRef.current.playbackRate = 3;
-        moveSoundRef.current.play();
-
-        console.log(1);
-
-        if (isChecked && piece.name.includes('King')) {
-          setIsChecked(false);
-          setTimeout(() => {
-            clearBloom();
-          }, animationTime + 1);
-        }
+      if (piece.legalMoves) {
+        displayHint(piece.legalMoves, 1);
+        const square = getSquareOfCursor(e);
+        getCoords(square, 1);
       }
     }
   };

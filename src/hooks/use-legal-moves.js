@@ -219,20 +219,43 @@ const useLegalMoves = () => {
     };
 
     if (curPiece.includes('King')) {
-      for (let y = curPosition[0] - 1; y <= curPosition[0] + 1; y++) {
-        for (let x = curPosition[1] - 1; x <= curPosition[1] + 1; x++) {
-          const possible = [y, x];
-          let isEqual = false;
+      // for (let y = curPosition[0] - 1; y <= curPosition[0] + 1; y++) {
+      //   for (let x = curPosition[1] - 1; x <= curPosition[1] + 1; x++) {
+      //     const possible = [y, x];
+      //     let isEqual = false;
 
-          if (y === curPosition[0] && x === curPosition[1]) {
-            isEqual = true;
-          }
+      //     if (y === curPosition[0] && x === curPosition[1]) {
+      //       isEqual = true;
+      //     }
 
-          if (y >= 1 && y <= 8 && x >= 1 && x <= 8 && !isEqual) {
-            movesArr.push(possible);
-          }
+      //     if (y >= 1 && y <= 8 && x >= 1 && x <= 8 && !isEqual) {
+      //       movesArr.push(possible);
+      //     }
+      //   }
+      // }
+
+      const pushMove = (y, x, line) => {
+        const possible = [y, x, line];
+        let isEqual = false;
+
+        if (y === curPosition[0] && x === curPosition[1]) {
+          isEqual = true;
+        }
+
+        if (y >= 1 && y <= 8 && x >= 1 && x <= 8 && !isEqual) {
+          movesArr.push(possible);
         }
       }
+
+      pushMove(curPosition[0] - 1, curPosition[1], '0');
+      pushMove(curPosition[0] - 1, curPosition[1] + 1, '45');
+      pushMove(curPosition[0], curPosition[1] + 1, '90');
+      pushMove(curPosition[0] + 1, curPosition[1] + 1, '135');
+      pushMove(curPosition[0] + 1, curPosition[1], '180');
+      pushMove(curPosition[0] + 1, curPosition[1] - 1, '225');
+      pushMove(curPosition[0], curPosition[1] - 1, '270');
+      pushMove(curPosition[0] - 1, curPosition[1] - 1, '315');
+      
 
       const pieces = Array.from(piecesRef.current.children);
 
@@ -267,6 +290,10 @@ const useLegalMoves = () => {
 
         if (!moveIsIlegal) filteredMovesArr.push(move);
       });
+
+      console.log(filteredMovesArr);
+
+      filteredMovesArr = checkPiecesAhead(filteredMovesArr);
 
       return filteredMovesArr;
     }
