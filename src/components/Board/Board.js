@@ -19,7 +19,7 @@ function Board(props) {
   const [final, setFinal] = useState([0, 0]);
   const [piece, setPiece] = useState({});
   const [map, setMap] = useState(getInitialMap(props.side));
-  const [isChecked, setIsChecked] = useState(false);
+  const [checked, setChecked] = useState({ side: '', line: '' });
   const [history, setHistory] = useState([]);
 
   const boardRef = useRef();
@@ -32,18 +32,22 @@ function Board(props) {
 
   usePieces(boardRef, piecesRef);
 
-  if (isChecked && piece.name.includes(isChecked + 'King')) {
-    const { coords } = map[isChecked + 'King'];
-
-    const legalMoves = getLegalMoves(
-      isChecked + 'King',
-      coords,
+  if (checked.side) {
+    console.log('checked');
+    const kingLegalMoves = getLegalMoves(
+      checked.side + 'King',
+      map[checked.side + 'King'].coords,
       boardRef,
       piecesRef,
       map
     );
 
-    console.log(legalMoves);
+    const threat = history[history.length - 1];
+    const threatMoves = map[threat.piece].legalMoves;
+
+    if (!threat.piece.includes('Knight') && !threat.piece.includes('Pawn')) {
+
+    }
   }
 
   const arrayToIndex = (y, x) => {
@@ -52,7 +56,7 @@ function Board(props) {
 
   const clearBloom = () => {
     const checkedKing = [...piecesRef.current.children].find((el) =>
-      el.className.includes(isChecked + 'King')
+      el.className.includes(checked.side + 'King')
     );
 
     checkedKing.style.background =
@@ -61,9 +65,9 @@ function Board(props) {
 
   const bloom = () => {
     const checkedKing = [...piecesRef.current.children].find((el) =>
-      el.className.includes(isChecked + 'King')
+      el.className.includes(checked.side + 'King')
     );
-    const kingCoords = map[isChecked + 'King'].coords;
+    const kingCoords = map[checked.side + 'King'].coords;
     const square =
       boardRef.current.children[arrayToIndex(kingCoords[0], kingCoords[1])];
 
@@ -79,18 +83,14 @@ function Board(props) {
     }
   };
 
-  if (isChecked) {
+  if (checked.side) {
     bloom();
   }
 
   const displayHint = (legalMoves, show) => {
     legalMoves
-      .map((move) => {
-        return arrayToIndex(move[0], move[1]);
-      })
-      .forEach((index) => {
-        boardRef.current.children[index].children[0].style.opacity = show;
-      });
+      .map((move) => arrayToIndex(move[0], move[1]))
+      .forEach((i) => boardRef.current.children[i].children[0].style.opacity = show);
   };
 
   const getSquareOfCursor = (e) => {
@@ -163,22 +163,14 @@ function Board(props) {
 
   const isCheck = () => {
     const kingSide = piece.name.includes('white') ? 'black' : 'white';
+    const kingCoords = map[kingSide + 'King'].coords;
+    
+    let coords = map[piece.name].coords;
 
     if (piece.name.includes(kingSide)) return;
-
-    const kingCoords = map[kingSide + 'King'].coords;
-    let pieceName = piece.name;
-    let coords;
-
-    if (piece.name.includes('1') || piece.name.includes('0')) {
-      pieceName = piece.name.slice(0, piece.name.length - 1);
-      coords = map[pieceName][piece.name[piece.name.length - 1] * 1].coords;
-    } else {
-      coords = map[pieceName].coords;
-    }
-
-    const legalMoves = getLegalMoves(
-      pieceName,
+    
+    const { legalMoves } = getLegalMoves(
+      piece.name,
       coords,
       boardRef,
       piecesRef,
@@ -187,7 +179,10 @@ function Board(props) {
 
     legalMoves.forEach((move) => {
       if (move[0] === kingCoords[0] && move[1] === kingCoords[1]) {
-        setIsChecked(kingSide);
+        setChecked({
+          side: kingSide,
+          line: move[2] || '', 
+        });
       }
     });
   };
@@ -195,29 +190,19 @@ function Board(props) {
   const updateMap = () => {
     const newMap = { ...map };
 
-    if (piece.name.includes('1') || piece.name.includes('0')) {
-      const index = piece.name[piece.name.length - 1] * 1;
-      const name = piece.name.slice(0, -1);
+    newMap[piece.name].coords = final;
 
-      newMap[name][index].coords = final;
-      newMap[name][index].legalMoves = getLegalMoves(
-        name,
-        final,
-        boardRef,
-        piecesRef,
-        map
-      );
-    } else {
-      newMap[piece.name].coords = final;
-      newMap[piece.name].legalMoves = getLegalMoves(
-        piece.name,
-        final,
-        boardRef,
-        piecesRef,
-        map
-      );
-    }
+    const { legalMoves, guarded } = getLegalMoves(
+      piece.name,
+      final,
+      boardRef,
+      piecesRef,
+      map,
+    );
 
+    newMap[piece.name].legalMoves = legalMoves;
+    if (piece.name.includes('King')) newMap[piece.name].guarded = guarded;
+    
     setMap(newMap);
   }
 
@@ -226,7 +211,7 @@ function Board(props) {
 
     setTimeout(() => {
       movPiece.parentNode.style.transition = 'none';
-      if (isChecked && ilegal) {
+      if (checked.side && ilegal) {
         bloom();
       }
     }, duration);
@@ -238,13 +223,6 @@ function Board(props) {
       initial: initial.position,
       final,
     }
-
-    if (piece.name.includes('0') || piece.name.includes('1')) {
-      move.piece = move.piece.slice(0, move.piece.length - 1);
-      move.index = piece.name[piece.name.length - 1];
-    }
-
-    console.log([...history, move]);
 
     setHistory([...history, move]);
   }
@@ -269,25 +247,23 @@ function Board(props) {
       moveSoundRef.current.playbackRate = 1.5;
       moveSoundRef.current.play();
 
-      if (isChecked && piece.name.includes('King')) {
-        setIsChecked(false);
+      if (checked.side && piece.name.includes('King')) {
+        setChecked({ side: '', line: '' });
       }
     }
   };
 
   const downHandler = (e, curPiece) => {
-    if (curPiece.includes(isChecked)) {
-      // !curPiece.includes(isChecked + 'King')
+    if (curPiece.includes(checked.side)) {
+      // !curPiece.includes(checked.side + 'King')
       
     }
 
     setHold(true);
 
-    // console.log(map[curPiece].legalMoves);
-
     const square = getSquareOfCursor(e);
     const coords = getCoords(square, 0);
-    const legalMoves = getLegalMoves(
+    const { legalMoves } = getLegalMoves(
       curPiece,
       coords,
       boardRef,
@@ -319,8 +295,8 @@ function Board(props) {
       }
 
       if (piece.legalMoves) {
-        displayHint(piece.legalMoves, 1);
         const square = getSquareOfCursor(e);
+        displayHint(piece.legalMoves, 1);
         getCoords(square, 1);
       }
     }

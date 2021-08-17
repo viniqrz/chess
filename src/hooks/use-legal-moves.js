@@ -169,7 +169,7 @@ const useLegalMoves = () => {
 
       movesArr = checkPiecesAhead(movesArr);
 
-      return movesArr;
+      return { legalMoves: movesArr, guarded: movesArr};
     };
 
     const getBishopMoves = (init) => {
@@ -180,7 +180,7 @@ const useLegalMoves = () => {
 
       movesArr = checkPiecesAhead(movesArr);
 
-      return movesArr;
+      return { legalMoves: movesArr, guarded: movesArr};
     };
 
     const getRookMoves = (init) => {
@@ -191,7 +191,7 @@ const useLegalMoves = () => {
 
       movesArr = checkPiecesAhead(movesArr);
 
-      return movesArr;
+      return { legalMoves: movesArr, guarded: movesArr};
     };
 
     const getKnightMoves = (init) => {
@@ -215,25 +215,11 @@ const useLegalMoves = () => {
           }
         }
       }
-      return movesArr;
+
+      return { legalMoves: movesArr, guarded: movesArr};
     };
 
     if (curPiece.includes('King')) {
-      // for (let y = curPosition[0] - 1; y <= curPosition[0] + 1; y++) {
-      //   for (let x = curPosition[1] - 1; x <= curPosition[1] + 1; x++) {
-      //     const possible = [y, x];
-      //     let isEqual = false;
-
-      //     if (y === curPosition[0] && x === curPosition[1]) {
-      //       isEqual = true;
-      //     }
-
-      //     if (y >= 1 && y <= 8 && x >= 1 && x <= 8 && !isEqual) {
-      //       movesArr.push(possible);
-      //     }
-      //   }
-      // }
-
       const pushMove = (y, x, line) => {
         const possible = [y, x, line];
         let isEqual = false;
@@ -266,36 +252,26 @@ const useLegalMoves = () => {
         pieces.forEach((piece) => {
           if (moveIsIlegal) return;
 
-          let pieceName = piece.id;
-          let index;
+          if (piece.id.includes(side)) return;
 
-          if (pieceName.includes(side)) return;
+          const opponentMoves = piece.id.includes('King') ? 
+          map[piece.id].guarded : map[piece.id].legalMoves;
 
-          if (pieceName.includes('0') || pieceName.includes('1')) {
-            index = pieceName[pieceName.length - 1];
-            pieceName = pieceName.slice(0, -1);
-            map[pieceName][index].legalMoves.forEach((el) => {
-              if (el[0] === move[0] && el[1] === move[1]) {
-                moveIsIlegal = true;
-              }
-            });
-          } else {
-            map[pieceName].legalMoves.forEach((el) => {
-              if (el[0] === move[0] && el[1] === move[1]) {
-                moveIsIlegal = true;
-              }
-            });
-          }
+          opponentMoves.forEach((el) => {
+            if (el[0] === move[0] && el[1] === move[1]) {
+              moveIsIlegal = true;
+            }
+          });
         });
 
         if (!moveIsIlegal) filteredMovesArr.push(move);
       });
 
-      console.log(filteredMovesArr);
+      // console.log(filteredMovesArr);
 
       filteredMovesArr = checkPiecesAhead(filteredMovesArr);
 
-      return filteredMovesArr;
+      return { legalMoves: filteredMovesArr, guarded: movesArr};
     }
 
     if (curPiece.includes('Queen')) {
