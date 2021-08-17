@@ -29,7 +29,7 @@ const useLegalMoves = () => {
                 (el) => el[0] === legalSquare[0] && el[1] === legalSquare[1]
               );
               const filteredNewArr = newArr.filter((move, i) => {
-                if (piece.id.includes(side)) {
+                if (piece.id.includes(side) && curPiece.includes('King')) {
                   if (move[2] === legalSquare[2] && i >= legalIndex) {
                     cleanedLines.push(move[2]);
                   }
@@ -169,7 +169,7 @@ const useLegalMoves = () => {
 
       movesArr = checkPiecesAhead(movesArr);
 
-      return { legalMoves: movesArr, guarded: movesArr};
+      return { legalMoves: movesArr, guarded: movesArr };
     };
 
     const getBishopMoves = (init) => {
@@ -180,7 +180,7 @@ const useLegalMoves = () => {
 
       movesArr = checkPiecesAhead(movesArr);
 
-      return { legalMoves: movesArr, guarded: movesArr};
+      return { legalMoves: movesArr, guarded: movesArr };
     };
 
     const getRookMoves = (init) => {
@@ -191,7 +191,7 @@ const useLegalMoves = () => {
 
       movesArr = checkPiecesAhead(movesArr);
 
-      return { legalMoves: movesArr, guarded: movesArr};
+      return { legalMoves: movesArr, guarded: movesArr };
     };
 
     const getKnightMoves = (init) => {
@@ -216,7 +216,7 @@ const useLegalMoves = () => {
         }
       }
 
-      return { legalMoves: movesArr, guarded: movesArr};
+      return { legalMoves: movesArr, guarded: movesArr };
     };
 
     if (curPiece.includes('King')) {
@@ -241,7 +241,7 @@ const useLegalMoves = () => {
       pushMove(curPosition[0] + 1, curPosition[1] - 1, '225');
       pushMove(curPosition[0], curPosition[1] - 1, '270');
       pushMove(curPosition[0] - 1, curPosition[1] - 1, '315');
-      
+
 
       const pieces = Array.from(piecesRef.current.children);
 
@@ -254,8 +254,8 @@ const useLegalMoves = () => {
 
           if (piece.id.includes(side)) return;
 
-          const opponentMoves = piece.id.includes('King') ? 
-          map[piece.id].guarded : map[piece.id].legalMoves;
+          const opponentMoves = piece.id.includes('King') ?
+            map[piece.id].guarded : map[piece.id].legalMoves;
 
           opponentMoves.forEach((el) => {
             if (el[0] === move[0] && el[1] === move[1]) {
@@ -267,11 +267,9 @@ const useLegalMoves = () => {
         if (!moveIsIlegal) filteredMovesArr.push(move);
       });
 
-      // console.log(filteredMovesArr);
-
       filteredMovesArr = checkPiecesAhead(filteredMovesArr);
 
-      return { legalMoves: filteredMovesArr, guarded: movesArr};
+      return { legalMoves: filteredMovesArr, guarded: movesArr };
     }
 
     if (curPiece.includes('Queen')) {

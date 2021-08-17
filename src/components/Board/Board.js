@@ -33,50 +33,99 @@ function Board(props) {
 
   usePieces(boardRef, piecesRef);
 
+  useEffect(() => {
+    console.log(defenders);
+  }, [defenders]);
+
+  const updateMap = (curPiece = piece.name) => {
+    const newMap = { ...map };
+
+    if (curPiece === piece.name) {
+      newMap[curPiece].coords = final;
+    }
+
+    const { legalMoves, guarded } = getLegalMoves(
+      curPiece,
+      newMap[curPiece].coords,
+      boardRef,
+      piecesRef,
+      map,
+    );
+
+    newMap[curPiece].legalMoves = legalMoves;
+    if (curPiece.includes('King')) newMap[curPiece].guarded = guarded;
+
+    setMap(newMap);
+
+    return newMap;
+  }
+
   if (checked.side && defenders.length < 1) {
     let defendersList = [];
+    let isThreatDefended = false;
     console.log('checked');
 
-    const kingLegalMoves = getLegalMoves(
+    const threat = history[history.length - 1];
+    const threatMoves = map[threat.piece].legalMoves;
+    const threatCoords = threat.final;
+    const pieces = [...piecesRef.current.children];
+
+    // Find defenders
+    if (true) {
+      let threatLine = threatMoves.filter((el) => el[2] === checked.line);
+      threatLine = threatLine.slice(0, threatLine.length - 1);
+
+      [...threatLine, threatCoords].forEach((sq) => {
+        pieces.forEach((piece) => {
+          if (piece.id.includes(checked.side + 'King')) return;
+
+          if (piece.id.includes(checked.side)) {
+            const { legalMoves } = getLegalMoves(
+              piece.id,
+              map[piece.id].coords,
+              boardRef,
+              piecesRef,
+              map
+            );
+
+            legalMoves.forEach((move) => {
+              const [y, x] = move;
+              if (y === sq[0] && x === sq[1]) {
+                defendersList.push({ move: [y, x], name: piece.id });
+              }
+            });
+          }
+
+          if (!piece.id.includes(checked.side) && !isThreatDefended) {
+            const newMap = updateMap(piece.id);
+            const { legalMoves } = newMap[piece.id];
+
+            if (piece.id.includes('blackBishop')) console.log(legalMoves);
+
+            legalMoves.forEach((move) => {
+              const [y, x] = move;
+              if (y === threatCoords[0] && x === threatCoords[1]) {
+                isThreatDefended = true;
+              }
+            });
+          }
+        })
+      });
+    }
+
+    const { legalMoves: kingLegalMoves } = getLegalMoves(
       checked.side + 'King',
       map[checked.side + 'King'].coords,
       boardRef,
       piecesRef,
       map
     );
-    
-    const threat = history[history.length - 1];
-    const threatMoves = map[threat.piece].legalMoves;
-    const pieces = [...piecesRef.current.children]
-      .filter(el => el.id.includes(checked.side));
 
-    if (!threat.piece.includes('Knight') && !threat.piece.includes('Pawn')) {
-      let threatLine = threatMoves.filter((el) => el[2] === checked.line);
-      threatLine = threatLine.slice(0, threatLine.length - 1);
-      
-      threatLine.forEach((sq) => {
-        pieces.forEach((piece) => {
-          if (piece.id.includes('King')) return;
-          const { legalMoves } = getLegalMoves(
-            piece.id,
-            map[piece.id].coords,
-            boardRef,
-            piecesRef,
-            map
-          );
+    console.log(kingLegalMoves);
 
-          legalMoves.forEach((move) => {
-            const [y, x] = move;
-            if (y === sq[0] && x === sq[1]) {
-              console.log('oba peao', piece.id);
-              defendersList.push({ move: [y, x], name: piece.id });
-            }
-          });
-        })
-      });
-    }
+    if (defendersList.length === 0 && kingLegalMoves.length === 0) alert('CHECKMATE!');
 
-    setDefenders(defendersList);
+    setDefenders(defendersList.length === 0 ? [null] : defendersList);
   }
 
   const arrayToIndex = (y, x) => {
@@ -196,7 +245,7 @@ function Board(props) {
     const coords = map[piece.name].coords;
 
     if (piece.name.includes(kingSide)) return;
-    
+
     const { legalMoves } = getLegalMoves(
       piece.name,
       coords,
@@ -209,30 +258,11 @@ function Board(props) {
       if (move[0] === kingCoords[0] && move[1] === kingCoords[1]) {
         setChecked({
           side: kingSide,
-          line: move[2] || '', 
+          line: move[2] || '',
         });
       }
     });
   };
-
-  const updateMap = () => {
-    const newMap = { ...map };
-
-    newMap[piece.name].coords = final;
-
-    const { legalMoves, guarded } = getLegalMoves(
-      piece.name,
-      final,
-      boardRef,
-      piecesRef,
-      map,
-    );
-
-    newMap[piece.name].legalMoves = legalMoves;
-    if (piece.name.includes('King')) newMap[piece.name].guarded = guarded;
-    
-    setMap(newMap);
-  }
 
   const slidePiece = (movPiece, duration, ilegal) => {
     movPiece.parentNode.style.transition = 'all ' + duration + 'ms';
@@ -254,7 +284,7 @@ function Board(props) {
 
     setHistory([...history, move]);
   }
- 
+
   const makeMove = (finalSquare, movPiece) => {
     const ilegal = isIlegal(finalSquare);
 
@@ -277,14 +307,21 @@ function Board(props) {
 
       if (checked.side && piece.name.includes('King')) {
         setChecked({ side: '', line: '' });
+        setDefenders([]);
       }
     }
   };
 
   const downHandler = (e, curPiece) => {
+    if (curPiece.includes('King')) {
+      [...piecesRef.current.children].forEach((el) => {
+        if (el.id.includes(props.side)) return;
+        updateMap(el.id);
+      });
+    }
+
     if (curPiece.includes(checked.side)) {
-      // !curPiece.includes(checked.side + 'King')
-      
+      // !curPiece.includes(checked.side + 'King');
     }
 
     setHold(true);
