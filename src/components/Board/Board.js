@@ -12,7 +12,6 @@ import useLegalMoves from './../../hooks/use-legal-moves';
 import Pieces from './../Pieces/Pieces.js';
 
 function Board(props) {
-  const [pieceBox, setPieceBox] = useState(0);
   const [hold, setHold] = useState(false);
   const [left, setLeft] = useState({});
   const [top, setTop] = useState({});
@@ -222,57 +221,66 @@ function Board(props) {
     setMap(newMap);
   }
 
-  const slidePiece = (targetPiece, duration, ilegal) => {
-    targetPiece.parentNode.style.transition = 'all ' + duration + 'ms';
+  const slidePiece = (movPiece, duration, ilegal) => {
+    movPiece.parentNode.style.transition = 'all ' + duration + 'ms';
 
     setTimeout(() => {
-      targetPiece.parentNode.style.transition = 'none';
+      movPiece.parentNode.style.transition = 'none';
       if (isChecked && ilegal) {
         bloom();
       }
     }, duration);
   }
 
-  const makeMove = (finalSquare, targetPiece) => {
+  const updateHistory = () => {
+    const move = {
+      piece: piece.name,
+      initial: initial.position,
+      final,
+    }
+
+    if (piece.name.includes('0') || piece.name.includes('1')) {
+      move.piece = move.piece.slice(0, move.piece.length - 1);
+      move.index = piece.name[piece.name.length - 1];
+    }
+
+    console.log([...history, move]);
+
+    setHistory([...history, move]);
+  }
+ 
+  const makeMove = (finalSquare, movPiece) => {
     const ilegal = isIlegal(finalSquare);
 
-    slidePiece(targetPiece, 100, ilegal);
+    slidePiece(movPiece, 100, ilegal);
 
     if (ilegal) {
       const { left, top } = initial.square.getBoundingClientRect();
-      targetPiece.parentNode.style.left = left + 'px';
-      targetPiece.parentNode.style.top = top + 'px';
+      movPiece.parentNode.style.left = left + 'px';
+      movPiece.parentNode.style.top = top + 'px';
     } else {
       const { left, top } = finalSquare.getBoundingClientRect();
-      targetPiece.parentNode.style.left = left + 'px';
-      targetPiece.parentNode.style.top = top + 'px';
+      movPiece.parentNode.style.left = left + 'px';
+      movPiece.parentNode.style.top = top + 'px';
 
       updateMap();
+      updateHistory();
 
-      moveSoundRef.current.playbackRate = 3;
+      moveSoundRef.current.playbackRate = 1.5;
       moveSoundRef.current.play();
 
       if (isChecked && piece.name.includes('King')) {
         setIsChecked(false);
       }
-
-      const move = {
-        piece: '',
-      }
-
-      setHistory([...history, ])
     }
   };
 
-  const downHandler = (size, e, curPiece) => {
-    if (
-      curPiece.includes(isChecked) &&
-      !curPiece.includes(isChecked + 'King')
-    ) {
-      return;
+  const downHandler = (e, curPiece) => {
+    if (curPiece.includes(isChecked)) {
+      // !curPiece.includes(isChecked + 'King')
+      
     }
 
-    setPieceBox(size);
     setHold(true);
 
     // console.log(map[curPiece].legalMoves);
@@ -300,8 +308,8 @@ function Board(props) {
       const objLeft = {};
       const objTop = {};
 
-      objLeft[piece.name] = e.clientX - pieceBox / 2;
-      objTop[piece.name] = e.clientY - pieceBox / 2;
+      objLeft[piece.name] = e.clientX - piece.element.offsetWidth / 2;
+      objTop[piece.name] = e.clientY - piece.element.offsetHeight / 2;
 
       setLeft(objLeft);
       setTop(objTop);

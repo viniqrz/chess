@@ -1,17 +1,9 @@
-import { useRef } from 'react';
 import whiteBishop from './../../img/whiteBishop.svg';
 import blackBishop from './../../img/blackBishop.svg';
 
 const Bishop = (props) => {
-  const pieceRef = useRef();
-
   const clickDownHandler = (e) => {
-    props.onClickDown(
-      pieceRef.current.offsetWidth,
-      e,
-      `${props.side}Bishop${props.index}`
-    );
-    // props.sendSize(useRef.current.offsetWidth);
+    props.onClickDown(e, `${props.side}Bishop${props.index}`);
   };
 
   return (
@@ -21,7 +13,6 @@ const Bishop = (props) => {
         left: props.left + 'px',
         top: props.top + 'px',
       }}
-      ref={pieceRef}
       onMouseDown={clickDownHandler}
       className={`piece noselect ${props.side}Bishop${props.index}`}
       id={`${props.side}Bishop${props.index}`}

@@ -1,17 +1,10 @@
-import { useRef } from 'react';
 import whiteRook from './../../img/whiteRook.svg';
 import blackRook from './../../img/blackRook.svg';
 import './style/Pieces.css';
 
 const Rook = (props) => {
-  const pieceRef = useRef();
-
   const clickDownHandler = (e) => {
-    props.onClickDown(
-      pieceRef.current.offsetWidth,
-      e,
-      `${props.side}Rook${props.index}`
-    );
+    props.onClickDown(e, `${props.side}Rook${props.index}`);
   };
 
   return (
@@ -21,7 +14,6 @@ const Rook = (props) => {
         left: props.left + 'px',
         top: props.top + 'px',
       }}
-      ref={pieceRef}
       onMouseDown={clickDownHandler}
       className={`piece noselect ${props.side}Rook${props.index}`}
       id={`${props.side}Rook${props.index}`}

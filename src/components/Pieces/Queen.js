@@ -1,14 +1,10 @@
-import { useRef } from 'react';
 import whiteQueen from './../../img/whiteQueen.svg';
 import blackQueen from './../../img/blackQueen.svg';
 import './style/Pieces.css';
 
 const Queen = (props) => {
-  const pieceRef = useRef();
-
   const clickDownHandler = (e) => {
-    props.onClickDown(pieceRef.current.offsetWidth, e, `${props.side}Queen`);
-    // props.sendSize(useRef.current.offsetWidth);
+    props.onClickDown(e, `${props.side}Queen`);
   };
 
   return (
@@ -18,7 +14,6 @@ const Queen = (props) => {
         left: props.left + 'px',
         top: props.top + 'px',
       }}
-      ref={pieceRef}
       onMouseDown={clickDownHandler}
       className={`piece ${props.side}Queen noselect`}
       id={`${props.side}Queen`}
