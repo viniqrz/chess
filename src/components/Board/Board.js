@@ -69,7 +69,7 @@ function Board(props) {
             const [y, x] = move;
             if (y === sq[0] && x === sq[1]) {
               console.log('oba peao', piece.id);
-              defendersList.push(piece.id);
+              defendersList.push({ move: [y, x], name: piece.id });
             }
           });
         })
@@ -77,10 +77,6 @@ function Board(props) {
     }
 
     setDefenders(defendersList);
-  }
-
-  const getCheckScape = () => {
-    // aaaaa
   }
 
   const arrayToIndex = (y, x) => {
@@ -198,8 +194,6 @@ function Board(props) {
     const kingSide = piece.name.includes('white') ? 'black' : 'white';
     const kingCoords = map[kingSide + 'King'].coords;
     const coords = map[piece.name].coords;
-    
-    let checked = false;
 
     if (piece.name.includes(kingSide)) return;
     
@@ -213,15 +207,12 @@ function Board(props) {
 
     legalMoves.forEach((move) => {
       if (move[0] === kingCoords[0] && move[1] === kingCoords[1]) {
-        checked = true;
         setChecked({
           side: kingSide,
           line: move[2] || '', 
         });
       }
     });
-
-    if (checked) getCheckScape(); 
   };
 
   const updateMap = () => {
