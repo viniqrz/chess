@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 import './Board.css';
 
@@ -20,6 +20,7 @@ function Board(props) {
   const [piece, setPiece] = useState({});
   const [map, setMap] = useState(getInitialMap(props.side));
   const [checked, setChecked] = useState({ side: '', line: '' });
+  const [defenders, setDefenders] = useState([]);
   const [history, setHistory] = useState([]);
 
   const boardRef = useRef();
@@ -32,8 +33,10 @@ function Board(props) {
 
   usePieces(boardRef, piecesRef);
 
-  if (checked.side) {
+  if (checked.side && defenders.length < 1) {
+    let defendersList = [];
     console.log('checked');
+
     const kingLegalMoves = getLegalMoves(
       checked.side + 'King',
       map[checked.side + 'King'].coords,
@@ -41,13 +44,43 @@ function Board(props) {
       piecesRef,
       map
     );
-
+    
     const threat = history[history.length - 1];
     const threatMoves = map[threat.piece].legalMoves;
+    const pieces = [...piecesRef.current.children]
+      .filter(el => el.id.includes(checked.side));
 
     if (!threat.piece.includes('Knight') && !threat.piece.includes('Pawn')) {
+      let threatLine = threatMoves.filter((el) => el[2] === checked.line);
+      threatLine = threatLine.slice(0, threatLine.length - 1);
+      
+      threatLine.forEach((sq) => {
+        pieces.forEach((piece) => {
+          if (piece.id.includes('King')) return;
+          const { legalMoves } = getLegalMoves(
+            piece.id,
+            map[piece.id].coords,
+            boardRef,
+            piecesRef,
+            map
+          );
 
+          legalMoves.forEach((move) => {
+            const [y, x] = move;
+            if (y === sq[0] && x === sq[1]) {
+              console.log('oba peao', piece.id);
+              defendersList.push(piece.id);
+            }
+          });
+        })
+      });
     }
+
+    setDefenders(defendersList);
+  }
+
+  const getCheckScape = () => {
+    // aaaaa
   }
 
   const arrayToIndex = (y, x) => {
@@ -164,8 +197,9 @@ function Board(props) {
   const isCheck = () => {
     const kingSide = piece.name.includes('white') ? 'black' : 'white';
     const kingCoords = map[kingSide + 'King'].coords;
+    const coords = map[piece.name].coords;
     
-    let coords = map[piece.name].coords;
+    let checked = false;
 
     if (piece.name.includes(kingSide)) return;
     
@@ -179,12 +213,15 @@ function Board(props) {
 
     legalMoves.forEach((move) => {
       if (move[0] === kingCoords[0] && move[1] === kingCoords[1]) {
+        checked = true;
         setChecked({
           side: kingSide,
           line: move[2] || '', 
         });
       }
     });
+
+    if (checked) getCheckScape(); 
   };
 
   const updateMap = () => {
