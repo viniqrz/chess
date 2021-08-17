@@ -10,6 +10,8 @@ import usePieces from './../../hooks/use-pieces';
 import useLegalMoves from './../../hooks/use-legal-moves';
 
 import Pieces from './../Pieces/Pieces.js';
+import SideCoords from './../SideCoords/SideCoords';
+import UpperCoords from './../UpperCoords/UpperCoords';
 
 function Board(props) {
   const [hold, setHold] = useState(false);
@@ -391,30 +393,9 @@ function Board(props) {
     <div onMouseUp={upHandler} onMouseMove={moveHandler} className="Board">
       <audio ref={moveSoundRef} src={moveSfx}></audio>
       <div className="board-container" onContextMenu={contextMenuHandler}>
-        <div style={{ flexDirection: 'row' }} className="upper-coords">
-          <p>A</p>
-          <p>B</p>
-          <p>C</p>
-          <p>D</p>
-          <p>E</p>
-          <p>F</p>
-          <p>G</p>
-          <p>H</p>
-        </div>
+        <UpperCoords side={props.side} />
         <div className="inner-container">
-          <div
-            style={{ flexDirection: 'column-reverse' }}
-            className="side-coords"
-          >
-            <p>1</p>
-            <p>2</p>
-            <p>3</p>
-            <p>4</p>
-            <p>5</p>
-            <p>6</p>
-            <p>7</p>
-            <p>8</p>
-          </div>
+          <SideCoords side={props.side} />
           <div ref={boardRef} className="board">
             {squares}
           </div>
