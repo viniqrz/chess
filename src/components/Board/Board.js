@@ -21,6 +21,7 @@ function Board(props) {
   const [piece, setPiece] = useState({});
   const [map, setMap] = useState(getInitialMap(props.side));
   const [isChecked, setIsChecked] = useState(false);
+  const [history, setHistory] = useState([]);
 
   const boardRef = useRef();
   const piecesRef = useRef();
@@ -254,6 +255,12 @@ function Board(props) {
       if (isChecked && piece.name.includes('King')) {
         setIsChecked(false);
       }
+
+      const move = {
+        piece: '',
+      }
+
+      setHistory([...history, ])
     }
   };
 

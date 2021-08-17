@@ -30,7 +30,7 @@ const Knight = (props) => {
       <img
         draggable="false"
         src={props.side === 'white' ? whiteKnight : blackKnight}
-        alt=""
+        alt={props.side + 'Knight'}
       />
     </div>
   );

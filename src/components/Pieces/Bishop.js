@@ -29,7 +29,7 @@ const Bishop = (props) => {
       <img
         draggable="false"
         src={props.side === 'white' ? whiteBishop : blackBishop}
-        alt=""
+        alt={props.side + 'Bishop'}
       />
     </div>
   );
