@@ -29,11 +29,10 @@ function Board(props) {
   const piecesRef = useRef();
   const moveSoundRef = useRef();
 
-  // const squares = useSquares();
-
   const getLegalMoves = useLegalMoves();
+  const arrange = usePieces(map);
 
-  usePieces(boardRef, piecesRef);
+  window.addEventListener('resize', () => arrange(map));
 
   useEffect(() => {
     console.log(defenders);
@@ -350,7 +349,7 @@ function Board(props) {
           </div>
         </div>
       </div>
-      <div ref={piecesRef}>
+      <div ref={piecesRef} className="pieces">
         <Pieces hold={hold} left={left} top={top} onClickDown={downHandler} />
       </div>
     </div>
