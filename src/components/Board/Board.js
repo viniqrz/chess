@@ -24,6 +24,7 @@ function Board(props) {
   const [checked, setChecked] = useState({ side: '', line: '' });
   const [defenders, setDefenders] = useState([]);
   const [history, setHistory] = useState([]);
+  const [checkmate, setCheckmate] = useState(false);
 
   const boardRef = useRef();
   const piecesRef = useRef();
@@ -64,7 +65,6 @@ function Board(props) {
     const pieces = [...piecesRef.current.children];
 
     let defendersList = [];
-    let isThreatDefended = false;
 
     // Find defenders
     let threatLine = threatMoves.filter((el) => el[2] === checked.line);
@@ -72,11 +72,12 @@ function Board(props) {
 
     [...threatLine, threatCoords].forEach((sq) => {
       pieces.forEach((piece) => {
+        updateMap(piece.id);
+        const { legalMoves } = map[piece.id];
+
         if (piece.id.includes(checked.side + 'King')) return;
 
         if (piece.id.includes(checked.side)) {
-          const { legalMoves } = getLegalMoves(piece.id, map[piece.id].coords, map);
-
           legalMoves.forEach((move) => {
             const [y, x] = move;
             if (y === sq[0] && x === sq[1]) {
@@ -84,28 +85,12 @@ function Board(props) {
             }
           });
         }
-
-        if (!piece.id.includes(checked.side) && !isThreatDefended) {
-          const newMap = updateMap(piece.id);
-          const { legalMoves } = newMap[piece.id];
-
-          legalMoves.forEach((move) => {
-            const [y, x] = move;
-            if (y === threatCoords[0] && x === threatCoords[1]) {
-              isThreatDefended = true;
-            }
-          });
-        }
       })
     });
 
-    const { legalMoves: kingLegalMoves } = getLegalMoves(
-      checked.side + 'King',
-      map[checked.side + 'King'].coords,
-      map
-    );
+    const kingMoves = map[checked.side + 'King'].legalMoves;
 
-    if (defendersList.length === 0 && kingLegalMoves.length === 0) alert('CHECKMATE!');
+    if (defendersList.length === 0 && kingMoves.length === 0) setCheckmate(true);
 
     setDefenders(defendersList.length === 0 ? [null] : defendersList);
   }
@@ -184,6 +169,21 @@ function Board(props) {
     return curPosition;
   };
 
+  const removeFromMap = (name) => {
+    const newMap = { ...map };
+
+    newMap[name].legalMoves = [];
+    newMap[name].coords = [0, 0];
+
+    if (checked) {
+      setChecked({ side: '', line: '' });
+      setDefenders([]);
+      clearBloom();
+    }
+
+    setMap(newMap);
+  }
+
   const isIlegal = (square) => {
     const index = piece.legalMoves.findIndex((move) => move[0] === final[0] && move[1] === final[1]);
 
@@ -193,7 +193,6 @@ function Board(props) {
     const pieces = [...piecesRef.current.children];
 
     let ilegal = false;
-
 
     pieces.forEach((el) => {
       const { left: elLeft, top: elTop } = el.getBoundingClientRect();
@@ -208,6 +207,8 @@ function Board(props) {
 
       if (elLeft === left && elTop === top && !ilegal) {
         el.style.display = 'none';
+
+        removeFromMap(el.id);
       }
     });
 
@@ -283,20 +284,30 @@ function Board(props) {
   };
 
   const downHandler = (e, name, side) => {
-    if (name.includes('King')) {
+    if (checkmate) return;
+
+    const square = getSquareOfCursor(e);
+    const coords = getCoords(square, 0);
+
+    let legalMoves = [];
+    let isKing = name.includes('King');
+
+    if (isKing) {
       [...piecesRef.current.children].forEach((el) => {
         if (el.id.includes(props.side)) return;
         updateMap(el.id);
       });
     }
 
-    if (name.includes(checked.side)) {
-      // !name.includes(checked.side + 'King');
-    }
+    if (checked.side && name.includes(checked.side) && !isKing) {
+      if (!defenders.some(el => el.name === name)) return;
 
-    const square = getSquareOfCursor(e);
-    const coords = getCoords(square, 0);
-    const { legalMoves } = getLegalMoves(name, coords, map);
+      const defender = defenders.find(el => el.name === name);
+
+      legalMoves = [defender.move];
+    } else {
+      legalMoves = getLegalMoves(name, coords, map).legalMoves;
+    }
 
     setHold(true);
     setPiece({ name, legalMoves, side, element: e.target.parentNode });
@@ -331,7 +342,6 @@ function Board(props) {
 
     piece.element.style.zIndex = 1;
 
-
     displayHint(piece.legalMoves, 0);
     makeMove(square, e.target);
     isCheck();
@@ -352,6 +362,7 @@ function Board(props) {
       <div ref={piecesRef} className="pieces">
         <Pieces hold={hold} left={left} top={top} onClickDown={downHandler} />
       </div>
+      {checkmate && <h1>CHECKMATE!</h1>}
     </div>
   );
 }

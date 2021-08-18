@@ -38,6 +38,9 @@
   font-size: 12px;
   width: 12.5%;
   height: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .side-coords {
