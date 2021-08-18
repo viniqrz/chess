@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 
 import './Board.css';
-
 import moveSfx from './../../sfx/moveSfx.wav';
-import getInitialMap from './../../getInitialMap';
 
-import useSquares from './../../hooks/use-squares';
+import getInitialMap from './../../getInitialMap';
+import squares from '../../squares';
+
 import usePieces from './../../hooks/use-pieces';
 import useLegalMoves from './../../hooks/use-legal-moves';
 
@@ -29,7 +29,7 @@ function Board(props) {
   const piecesRef = useRef();
   const moveSoundRef = useRef();
 
-  const squares = useSquares();
+  // const squares = useSquares();
 
   const getLegalMoves = useLegalMoves();
 
@@ -46,8 +46,6 @@ function Board(props) {
     const { legalMoves, guarded } = getLegalMoves(
       curPiece,
       newMap[curPiece].coords,
-      boardRef,
-      piecesRef,
       map,
     );
 
@@ -70,53 +68,41 @@ function Board(props) {
     let isThreatDefended = false;
 
     // Find defenders
-    if (true) {
-      let threatLine = threatMoves.filter((el) => el[2] === checked.line);
-      threatLine = threatLine.slice(0, threatLine.length - 1);
+    let threatLine = threatMoves.filter((el) => el[2] === checked.line);
+    threatLine = threatLine.slice(0, threatLine.length - 1);
 
-      [...threatLine, threatCoords].forEach((sq) => {
-        pieces.forEach((piece) => {
-          if (piece.id.includes(checked.side + 'King')) return;
+    [...threatLine, threatCoords].forEach((sq) => {
+      pieces.forEach((piece) => {
+        if (piece.id.includes(checked.side + 'King')) return;
 
-          if (piece.id.includes(checked.side)) {
-            const { legalMoves } = getLegalMoves(
-              piece.id,
-              map[piece.id].coords,
-              boardRef,
-              piecesRef,
-              map
-            );
+        if (piece.id.includes(checked.side)) {
+          const { legalMoves } = getLegalMoves(piece.id, map[piece.id].coords, map);
 
-            legalMoves.forEach((move) => {
-              const [y, x] = move;
-              if (y === sq[0] && x === sq[1]) {
-                defendersList.push({ move: [y, x], name: piece.id });
-              }
-            });
-          }
+          legalMoves.forEach((move) => {
+            const [y, x] = move;
+            if (y === sq[0] && x === sq[1]) {
+              defendersList.push({ move: [y, x], name: piece.id });
+            }
+          });
+        }
 
-          if (!piece.id.includes(checked.side) && !isThreatDefended) {
-            const newMap = updateMap(piece.id);
-            const { legalMoves } = newMap[piece.id];
+        if (!piece.id.includes(checked.side) && !isThreatDefended) {
+          const newMap = updateMap(piece.id);
+          const { legalMoves } = newMap[piece.id];
 
-            if (piece.id.includes('blackBishop')) console.log(legalMoves);
-
-            legalMoves.forEach((move) => {
-              const [y, x] = move;
-              if (y === threatCoords[0] && x === threatCoords[1]) {
-                isThreatDefended = true;
-              }
-            });
-          }
-        })
-      });
-    }
+          legalMoves.forEach((move) => {
+            const [y, x] = move;
+            if (y === threatCoords[0] && x === threatCoords[1]) {
+              isThreatDefended = true;
+            }
+          });
+        }
+      })
+    });
 
     const { legalMoves: kingLegalMoves } = getLegalMoves(
       checked.side + 'King',
       map[checked.side + 'King'].coords,
-      boardRef,
-      piecesRef,
       map
     );
 
@@ -125,9 +111,7 @@ function Board(props) {
     setDefenders(defendersList.length === 0 ? [null] : defendersList);
   }
 
-  const arrayToIndex = (y, x) => {
-    return y * 8 - (8 - [x]) - 1;
-  };
+  const arrayToIndex = (y, x) => y * 8 - (8 - [x]) - 1;
 
   const clearBloom = () => {
     const checkedKing = [...piecesRef.current.children].find((el) =>
@@ -181,7 +165,7 @@ function Board(props) {
       }
     });
 
-    return element;
+    return element || '';
   };
 
   const getCoords = (element, moment) => {
@@ -203,12 +187,14 @@ function Board(props) {
 
   const isIlegal = (square) => {
     const index = piece.legalMoves.findIndex((move) => move[0] === final[0] && move[1] === final[1]);
+
+    if (index === -1) return true;
+
     const { left, top } = square.getBoundingClientRect();
     const pieces = [...piecesRef.current.children];
 
     let ilegal = false;
 
-    if (index === -1) return true;
 
     pieces.forEach((el) => {
       const { left: elLeft, top: elTop } = el.getBoundingClientRect();
@@ -236,13 +222,7 @@ function Board(props) {
 
     if (piece.name.includes(kingSide)) return;
 
-    const { legalMoves } = getLegalMoves(
-      piece.name,
-      coords,
-      boardRef,
-      piecesRef,
-      map
-    );
+    const { legalMoves } = getLegalMoves(piece.name, coords, map);
 
     legalMoves.forEach((move) => {
       if (move[0] === y && move[1] === x) {
@@ -273,7 +253,11 @@ function Board(props) {
   }
 
   const makeMove = (finalSquare, movPiece) => {
-    const ilegal = isIlegal(finalSquare);
+    let ilegal = true;
+
+    if (finalSquare) {
+      ilegal = isIlegal(finalSquare);
+    }
 
     slidePiece(movPiece, 100, ilegal);
 
@@ -313,13 +297,7 @@ function Board(props) {
 
     const square = getSquareOfCursor(e);
     const coords = getCoords(square, 0);
-    const { legalMoves } = getLegalMoves(
-      name,
-      coords,
-      boardRef,
-      piecesRef,
-      map
-    );
+    const { legalMoves } = getLegalMoves(name, coords, map);
 
     setHold(true);
     setPiece({ name, legalMoves, side, element: e.target.parentNode });
@@ -343,24 +321,25 @@ function Board(props) {
     if (piece.legalMoves) {
       const square = getSquareOfCursor(e);
       displayHint(piece.legalMoves, 1);
-      getCoords(square, 1);
+      if (square) getCoords(square, 1);
     }
   };
 
   const upHandler = (e) => {
     if (!hold) return;
+    setHold(false);
     const square = getSquareOfCursor(e);
 
     piece.element.style.zIndex = 1;
 
-    setHold(false);
+
     displayHint(piece.legalMoves, 0);
     makeMove(square, e.target);
     isCheck();
   };
 
   return (
-    <div onMouseUp={upHandler} onMouseMove={moveHandler} className="board-container">
+    <div onMouseUp={upHandler} onMouseMove={moveHandler} className="page">
       <audio ref={moveSoundRef} src={moveSfx}></audio>
       <div className="board-container" onContextMenu={(e) => e.preventDefault()}>
         <UpperCoords side={props.side} />

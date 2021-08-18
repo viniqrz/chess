@@ -4,11 +4,8 @@
   box-sizing: border-box;
 }
 
-.Board {
+.page {
   text-align: center;
-}
-
-.Board {
   width: 100%;
   height: 100vh;
 }
