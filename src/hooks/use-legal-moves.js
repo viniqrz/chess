@@ -1,51 +1,47 @@
 const useLegalMoves = () => {
-  return (curPiece, curPosition, boardRef, piecesRef, map) => {
+  return (curPiece, curPosition, map) => {
     const side = curPiece.includes('white') ? 'white' : 'black';
 
-    const arrayToIndex = (y, x) => {
-      return y * 8 - (8 - [x]) - 1;
-    };
-
     const checkPiecesAhead = (initLegalMoves) => {
-      const pieces = Array.from(piecesRef.current.children);
-      const squares = Array.from(boardRef.current.children);
       let newArr = initLegalMoves;
-      let cleanedLines = [];
+      let clearLines = [];
 
       initLegalMoves.forEach((legalSquare) => {
-        const index = arrayToIndex(legalSquare[0], legalSquare[1]);
-        const { left, top } = squares[index].getBoundingClientRect();
-        const foundCleanedLine = cleanedLines.find(
-          (el) => el === legalSquare[2]
-        );
+        const [sqY, sqX, sqLine] = legalSquare;
+        const foundCleanedLine = clearLines.some((el) => el === sqLine);
 
-        if (foundCleanedLine === -1 || foundCleanedLine === undefined) {
-          pieces.forEach((piece) => {
-            const { left: pieceLeft, top: pieceTop } =
-              piece.getBoundingClientRect();
+        if (foundCleanedLine) return;
 
-            if (left === pieceLeft && top === pieceTop) {
-              const legalIndex = newArr.findIndex(
-                (el) => el[0] === legalSquare[0] && el[1] === legalSquare[1]
-              );
-              const filteredNewArr = newArr.filter((move, i) => {
-                if (piece.id.includes(side) && curPiece.includes('King')) {
-                  if (move[2] === legalSquare[2] && i >= legalIndex) {
-                    cleanedLines.push(move[2]);
-                  }
-                  return !(move[2] === legalSquare[2] && i >= legalIndex);
-                } else {
-                  if (move[2] === legalSquare[2] && i > legalIndex) {
-                    cleanedLines.push(move[2]);
-                  }
-                  return !(move[2] === legalSquare[2] && i > legalIndex);
+        const piecesArr = Object.entries(map);
+        piecesArr.forEach((piece) => {
+          const [name, details] = piece;
+          const { coords } = details;
+          const [pieceY, pieceX] = coords;
+
+          if (sqY === pieceY && sqX === pieceX) {
+            const legalIndex = newArr.findIndex((el) => el[0] === sqY && el[1] === sqX);
+
+            const filteredNewArr = newArr.filter((move, i) => {
+              const movLine = move[2];
+              const isSameOrAfterPiece = movLine === sqLine && i >= legalIndex;
+
+              if (name.includes(side) && curPiece.includes('King')) {
+                if (isSameOrAfterPiece) {
+                  clearLines.push(movLine);
                 }
-              });
 
-              newArr = filteredNewArr;
-            }
-          });
-        }
+                return !(isSameOrAfterPiece);
+              } else {
+                if (movLine === sqLine && i > legalIndex) {
+                  clearLines.push(movLine);
+                }
+                return !(movLine === sqLine && i > legalIndex);
+              }
+            });
+
+            newArr = filteredNewArr;
+          }
+        });
       });
 
       return newArr;
@@ -243,28 +239,28 @@ const useLegalMoves = () => {
       pushMove(curPosition[0] - 1, curPosition[1] - 1, '315');
 
 
-      const pieces = Array.from(piecesRef.current.children);
-
+      const pieces = Object.keys(map);
       let filteredMovesArr = [];
 
       movesArr.forEach((move) => {
-        let moveIsIlegal = false;
+        const [y, x] = move;
+
+        let isLegal = true;
+
         pieces.forEach((piece) => {
-          if (moveIsIlegal) return;
+          if (!isLegal || piece.includes(side)) return;
 
-          if (piece.id.includes(side)) return;
-
-          const opponentMoves = piece.id.includes('King') ?
-            map[piece.id].guarded : map[piece.id].legalMoves;
+          const opponentMoves = piece.includes('King') ?
+            map[piece].guarded : map[piece].legalMoves;
 
           opponentMoves.forEach((el) => {
-            if (el[0] === move[0] && el[1] === move[1]) {
-              moveIsIlegal = true;
+            if (el[0] === y && el[1] === x) {
+              isLegal = false;
             }
           });
         });
 
-        if (!moveIsIlegal) filteredMovesArr.push(move);
+        if (isLegal) filteredMovesArr.push(move);
       });
 
       filteredMovesArr = checkPiecesAhead(filteredMovesArr);
