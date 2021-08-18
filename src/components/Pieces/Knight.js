@@ -4,10 +4,7 @@ import './style/Pieces.css';
 
 const Knight = (props) => {
   const clickDownHandler = (e) => {
-    props.onClickDown(
-      e,
-      `${props.side}Knight${props.index}`
-    );
+    props.onClickDown(e, `${props.side}Knight${props.index}`, props.side);
   };
 
   return (

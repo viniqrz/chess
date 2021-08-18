@@ -40,12 +40,9 @@ function Board(props) {
   }, [defenders]);
 
   const updateMap = (curPiece = piece.name) => {
+    if (curPiece === piece.name) map[curPiece].coords = final;
+
     const newMap = { ...map };
-
-    if (curPiece === piece.name) {
-      newMap[curPiece].coords = final;
-    }
-
     const { legalMoves, guarded } = getLegalMoves(
       curPiece,
       newMap[curPiece].coords,
@@ -55,6 +52,7 @@ function Board(props) {
     );
 
     newMap[curPiece].legalMoves = legalMoves;
+
     if (curPiece.includes('King')) newMap[curPiece].guarded = guarded;
 
     setMap(newMap);
@@ -63,14 +61,13 @@ function Board(props) {
   }
 
   if (checked.side && defenders.length < 1) {
-    let defendersList = [];
-    let isThreatDefended = false;
-    console.log('checked');
-
     const threat = history[history.length - 1];
     const threatMoves = map[threat.piece].legalMoves;
     const threatCoords = threat.final;
     const pieces = [...piecesRef.current.children];
+
+    let defendersList = [];
+    let isThreatDefended = false;
 
     // Find defenders
     if (true) {
@@ -123,8 +120,6 @@ function Board(props) {
       map
     );
 
-    console.log(kingLegalMoves);
-
     if (defendersList.length === 0 && kingLegalMoves.length === 0) alert('CHECKMATE!');
 
     setDefenders(defendersList.length === 0 ? [null] : defendersList);
@@ -144,16 +139,13 @@ function Board(props) {
   };
 
   const bloom = () => {
-    const checkedKing = [...piecesRef.current.children].find((el) =>
-      el.className.includes(checked.side + 'King')
-    );
-    const kingCoords = map[checked.side + 'King'].coords;
-    const square =
-      boardRef.current.children[arrayToIndex(kingCoords[0], kingCoords[1])];
-
+    const pieces = [...piecesRef.current.children];
+    const [y, x] = map[checked.side + 'King'].coords;
+    const squares = boardRef.current.children;
+    const square = squares[arrayToIndex(y, x)];
+    const checkedKing = pieces.find(el => el.className.includes(checked.side + 'King'));
     const { left: squareLeft, top: squareTop } = square.getBoundingClientRect();
-    const { left: pieceLeft, top: pieceTop } =
-      checkedKing.getBoundingClientRect();
+    const { left: pieceLeft, top: pieceTop } = checkedKing.getBoundingClientRect();
 
     if (squareLeft === pieceLeft && squareTop === pieceTop) {
       checkedKing.style.background =
@@ -168,13 +160,15 @@ function Board(props) {
   }
 
   const displayHint = (legalMoves, show) => {
-    legalMoves
-      .map((move) => arrayToIndex(move[0], move[1]))
-      .forEach((i) => boardRef.current.children[i].children[0].style.opacity = show);
+    const indexList = legalMoves.map((move) => arrayToIndex(move[0], move[1]));
+    indexList.forEach((i) => (
+      boardRef.current.children[i].children[0].style.opacity = show
+    ));
   };
 
   const getSquareOfCursor = (e) => {
     const squaresArr = Array.from(boardRef.current.children);
+
     let element;
 
     squaresArr.forEach((square) => {
@@ -192,9 +186,7 @@ function Board(props) {
 
   const getCoords = (element, moment) => {
     const squaresArr = Array.from(boardRef.current.children);
-
     const index = squaresArr.findIndex((el) => el === element) + 1;
-
     const curPosition = [Math.ceil(index / 8), index % 8 || 8];
 
     if (moment && curPosition !== final) {
@@ -210,17 +202,13 @@ function Board(props) {
   };
 
   const isIlegal = (square) => {
-    const legalIndex = piece.legalMoves.findIndex((legalMove) => {
-      return legalMove[0] === final[0] && legalMove[1] === final[1];
-    });
-
-    if (legalIndex === -1) return true;
-
+    const index = piece.legalMoves.findIndex((move) => move[0] === final[0] && move[1] === final[1]);
     const { left, top } = square.getBoundingClientRect();
+    const pieces = [...piecesRef.current.children];
 
     let ilegal = false;
 
-    const pieces = [...piecesRef.current.children];
+    if (index === -1) return true;
 
     pieces.forEach((el) => {
       const { left: elLeft, top: elTop } = el.getBoundingClientRect();
@@ -243,7 +231,7 @@ function Board(props) {
 
   const isCheck = () => {
     const kingSide = piece.name.includes('white') ? 'black' : 'white';
-    const kingCoords = map[kingSide + 'King'].coords;
+    const [y, x] = map[kingSide + 'King'].coords;
     const coords = map[piece.name].coords;
 
     if (piece.name.includes(kingSide)) return;
@@ -257,11 +245,8 @@ function Board(props) {
     );
 
     legalMoves.forEach((move) => {
-      if (move[0] === kingCoords[0] && move[1] === kingCoords[1]) {
-        setChecked({
-          side: kingSide,
-          line: move[2] || '',
-        });
+      if (move[0] === y && move[1] === x) {
+        setChecked({ side: kingSide, line: move[2] || '' });
       }
     });
   };
@@ -314,85 +299,70 @@ function Board(props) {
     }
   };
 
-  const downHandler = (e, curPiece) => {
-    if (curPiece.includes('King')) {
+  const downHandler = (e, name, side) => {
+    if (name.includes('King')) {
       [...piecesRef.current.children].forEach((el) => {
         if (el.id.includes(props.side)) return;
         updateMap(el.id);
       });
     }
 
-    if (curPiece.includes(checked.side)) {
-      // !curPiece.includes(checked.side + 'King');
+    if (name.includes(checked.side)) {
+      // !name.includes(checked.side + 'King');
     }
-
-    setHold(true);
 
     const square = getSquareOfCursor(e);
     const coords = getCoords(square, 0);
     const { legalMoves } = getLegalMoves(
-      curPiece,
+      name,
       coords,
       boardRef,
       piecesRef,
       map
     );
 
-    setPiece({
-      name: curPiece,
-      legalMoves,
-      side: e.target.parentNode.className.includes('white') ? 'white' : 'black',
-      element: e.target.parentNode,
-    });
+    setHold(true);
+    setPiece({ name, legalMoves, side, element: e.target.parentNode });
   };
 
   const moveHandler = (e) => {
-    if (hold) {
-      const objLeft = {};
-      const objTop = {};
+    if (!hold) return;
+    const objLeft = {};
+    const objTop = {};
 
-      objLeft[piece.name] = e.clientX - piece.element.offsetWidth / 2;
-      objTop[piece.name] = e.clientY - piece.element.offsetHeight / 2;
+    objLeft[piece.name] = e.clientX - piece.element.offsetWidth / 2;
+    objTop[piece.name] = e.clientY - piece.element.offsetHeight / 2;
 
-      setLeft(objLeft);
-      setTop(objTop);
+    setLeft(objLeft);
+    setTop(objTop);
 
-      if (e.target.parentNode.className.includes(piece.name.slice(0, -1))) {
-        e.target.parentNode.style.zIndex = 2;
-      }
+    if (e.target.parentNode.className.includes(piece.name.slice(0, -1))) {
+      e.target.parentNode.style.zIndex = 2;
+    }
 
-      if (piece.legalMoves) {
-        const square = getSquareOfCursor(e);
-        displayHint(piece.legalMoves, 1);
-        getCoords(square, 1);
-      }
+    if (piece.legalMoves) {
+      const square = getSquareOfCursor(e);
+      displayHint(piece.legalMoves, 1);
+      getCoords(square, 1);
     }
   };
 
   const upHandler = (e) => {
     if (!hold) return;
-
-    setHold(false);
+    const square = getSquareOfCursor(e);
 
     piece.element.style.zIndex = 1;
 
+    setHold(false);
     displayHint(piece.legalMoves, 0);
-
-    const square = getSquareOfCursor(e);
-
     makeMove(square, e.target);
-
     isCheck();
   };
 
-  const contextMenuHandler = (e) => {
-    e.preventDefault();
-  };
-
   return (
-    <div onMouseUp={upHandler} onMouseMove={moveHandler} className="Board">
+    <div onMouseUp={upHandler} onMouseMove={moveHandler} className="board-container">
       <audio ref={moveSoundRef} src={moveSfx}></audio>
-      <div className="board-container" onContextMenu={contextMenuHandler}>
+      <div className="board-container" onContextMenu={(e) => e.preventDefault()}>
         <UpperCoords side={props.side} />
         <div className="inner-container">
           <SideCoords side={props.side} />

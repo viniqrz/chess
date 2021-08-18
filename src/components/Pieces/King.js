@@ -3,7 +3,7 @@ import blackKing from './../../img/blackKing.svg';
 
 const King = (props) => {
   const clickDownHandler = (e) => {
-    props.onClickDown(e, `${props.side}King`);
+    props.onClickDown(e, `${props.side}King`, props.side);
   };
 
   return (

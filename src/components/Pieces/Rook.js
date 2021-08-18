@@ -4,7 +4,7 @@ import './style/Pieces.css';
 
 const Rook = (props) => {
   const clickDownHandler = (e) => {
-    props.onClickDown(e, `${props.side}Rook${props.index}`);
+    props.onClickDown(e, `${props.side}Rook${props.index}`, props.side);
   };
 
   return (

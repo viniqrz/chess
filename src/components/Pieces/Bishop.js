@@ -3,7 +3,7 @@ import blackBishop from './../../img/blackBishop.svg';
 
 const Bishop = (props) => {
   const clickDownHandler = (e) => {
-    props.onClickDown(e, `${props.side}Bishop${props.index}`);
+    props.onClickDown(e, `${props.side}Bishop${props.index}`, props.side);
   };
 
   return (

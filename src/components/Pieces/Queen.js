@@ -4,7 +4,7 @@ import './style/Pieces.css';
 
 const Queen = (props) => {
   const clickDownHandler = (e) => {
-    props.onClickDown(e, `${props.side}Queen`);
+    props.onClickDown(e, `${props.side}Queen`, props.side);
   };
 
   return (
