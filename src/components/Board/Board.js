@@ -175,7 +175,7 @@ function Board(props) {
     newMap[name].legalMoves = [];
     newMap[name].coords = [0, 0];
 
-    if (checked) {
+    if (checked.side) {
       setChecked({ side: '', line: '' });
       setDefenders([]);
       clearBloom();
@@ -276,9 +276,10 @@ function Board(props) {
       moveSoundRef.current.playbackRate = 1.5;
       moveSoundRef.current.play();
 
-      if (checked.side && piece.name.includes('King')) {
+      if (checked.side && piece.name.includes(checked.side)) {
         setChecked({ side: '', line: '' });
         setDefenders([]);
+        clearBloom();
       }
     }
   };
