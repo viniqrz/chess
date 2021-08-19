@@ -23,7 +23,7 @@ const useLegalMoves = () => {
 
             const filteredNewArr = newArr.filter((move, i) => {
               const movLine = move[2];
-              const isSameOrAfterPiece = movLine === sqLine && i >= legalIndex;
+              const isSameOrAfterPiece = (movLine === sqLine && i >= legalIndex);
 
               if (name.includes(side) && curPiece.includes('King')) {
                 if (isSameOrAfterPiece) {
@@ -31,12 +31,21 @@ const useLegalMoves = () => {
                 }
 
                 return !(isSameOrAfterPiece);
-              } else {
-                if (movLine === sqLine && i > legalIndex) {
+              }     
+
+              if (name.includes('King')) {
+                if (movLine === sqLine && i > legalIndex + 1) {
                   clearLines.push(movLine);
                 }
-                return !(movLine === sqLine && i > legalIndex);
+
+                return !(movLine === sqLine && i > legalIndex + 1);
               }
+
+              if (movLine === sqLine && i > legalIndex) {
+                clearLines.push(movLine);
+              }
+
+              return !(movLine === sqLine && i > legalIndex);
             });
 
             newArr = filteredNewArr;

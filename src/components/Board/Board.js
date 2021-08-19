@@ -36,7 +36,7 @@ function Board(props) {
   window.addEventListener('resize', () => arrange(map));
 
   useEffect(() => {
-    console.log(defenders);
+    // console.log(defenders);
   }, [defenders]);
 
   const updateMap = (curPiece = piece.name) => {
@@ -239,7 +239,7 @@ function Board(props) {
       if (checked.side && ilegal) {
         bloom();
       }
-    }, duration);
+    }, duration + 20);
   }
 
   const updateHistory = () => {
@@ -295,13 +295,25 @@ function Board(props) {
 
     if (isKing) {
       [...piecesRef.current.children].forEach((el) => {
-        if (el.id.includes(props.side)) return;
+        if (el.id.includes(side)) return;
+        updateMap(el.id);
+      });
+    }
+
+    if (!isKing) {
+      [...piecesRef.current.children].forEach((el) => {
+        if (el.id.includes(side)) return;
+        if (el.id.includes('Knight') || el.id.includes('King')) return;
         updateMap(el.id);
       });
     }
 
     if (checked.side && name.includes(checked.side) && !isKing) {
       if (!defenders.some(el => el.name === name)) return;
+
+      // for (const piece of Object.keys(map)) {
+      //   if 
+      // }
 
       const defender = defenders.find(el => el.name === name);
 
