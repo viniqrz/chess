@@ -228,17 +228,9 @@ function Board(props) {
   };
 
   const isCheck = () => {
+    if (piece.name.includes('King')) return;
     const kingSide = piece.name.includes('white') ? 'black' : 'white';
     const [y, x] = map[kingSide + 'King'].coords;
-    // const coords = map[piece.name].coords;
-
-    // const { legalMoves } = getLegalMoves(piece.name, coords, map);
-
-    // legalMoves.forEach((move) => {
-    //   if (move[0] === y && move[1] === x) {
-    //     setChecked({ side: kingSide, line: move[2] || '' });
-    //   }
-    // });
 
     const pieces = Object.keys(map);
     pieces.forEach((pieceName) => {
