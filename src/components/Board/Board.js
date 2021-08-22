@@ -40,9 +40,10 @@ function Board(props) {
   }, [defenders]);
 
   const updateMap = (curPiece = piece.name) => {
-    if (curPiece === piece.name) map[curPiece].coords = final;
-
     const newMap = { ...map };
+
+    if (curPiece === piece.name) newMap[curPiece].coords = final;
+
     const { legalMoves, guarded, pinLines } = getLegalMoves(
       curPiece,
       newMap[curPiece].coords,
@@ -121,6 +122,8 @@ function Board(props) {
     const { left: squareLeft, top: squareTop } = square.getBoundingClientRect();
     const { left: pieceLeft, top: pieceTop } =
       checkedKing.getBoundingClientRect();
+
+    console.log(y, x);
 
     if (squareLeft === pieceLeft && squareTop === pieceTop) {
       checkedKing.style.background =
@@ -227,16 +230,27 @@ function Board(props) {
   const isCheck = () => {
     const kingSide = piece.name.includes('white') ? 'black' : 'white';
     const [y, x] = map[kingSide + 'King'].coords;
-    const coords = map[piece.name].coords;
+    // const coords = map[piece.name].coords;
 
-    if (piece.name.includes(kingSide)) return;
+    // const { legalMoves } = getLegalMoves(piece.name, coords, map);
 
-    const { legalMoves } = getLegalMoves(piece.name, coords, map);
+    // legalMoves.forEach((move) => {
+    //   if (move[0] === y && move[1] === x) {
+    //     setChecked({ side: kingSide, line: move[2] || '' });
+    //   }
+    // });
 
-    legalMoves.forEach((move) => {
-      if (move[0] === y && move[1] === x) {
-        setChecked({ side: kingSide, line: move[2] || '' });
-      }
+    const pieces = Object.keys(map);
+    pieces.forEach((pieceName) => {
+      if (pieceName.includes(kingSide)) return;
+      updateMap(pieceName);
+      const { legalMoves } = map[pieceName];
+
+      legalMoves.forEach((move) => {
+        if (move[0] === y && move[1] === x) {
+          setChecked({ side: kingSide, line: move[2] || '' });
+        }
+      });
     });
   };
 
@@ -285,12 +299,6 @@ function Board(props) {
       moveSoundRef.current.playbackRate = 1.5;
       moveSoundRef.current.play();
 
-      // [...piecesRef.current.children].forEach((el) => {
-      //   if (el.id.includes(piece.side)) return;
-      //   if (el.id.includes('Knight') || el.id.includes('King')) return;
-      //   updateMap(el.id);
-      // });
-
       if (checked.side && piece.name.includes(checked.side)) {
         setChecked({ side: '', line: '' });
         setDefenders([]);
@@ -306,7 +314,6 @@ function Board(props) {
     const coords = getCoords(square, 0);
 
     let legalMoves = [];
-    let pinLines = [];
     let isKing = name.includes('King');
 
     if (isKing) {
@@ -337,10 +344,7 @@ function Board(props) {
     } else {
       const kingObject = getLegalMoves(name, coords, map);
       legalMoves = kingObject.legalMoves;
-      pinLines = kingObject.pinLines;
     }
-
-    if (name.includes('King')) console.log(pinLines);
 
     setHold(true);
     setPiece({ name, legalMoves, side, element: e.target.parentNode });
