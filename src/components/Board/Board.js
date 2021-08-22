@@ -36,8 +36,13 @@ function Board(props) {
   window.addEventListener('resize', () => arrange(map));
 
   useEffect(() => {
-    // console.log(defenders);
-  }, [defenders]);
+    if (checked.side) {
+      [...piecesRef.current.children].find((el) =>
+        el.className.includes(checked.side + 'King')
+      ).style.background =
+        'radial-gradient(circle, rgba(255,0,0,1) 0%, rgba(134,134,134,0) 100%)';
+    }
+  }, [checked]);
 
   const updateMap = (curPiece = piece.name) => {
     const newMap = { ...map };
@@ -112,30 +117,13 @@ function Board(props) {
   };
 
   const bloom = () => {
-    const pieces = [...piecesRef.current.children];
-    const [y, x] = map[checked.side + 'King'].coords;
-    const squares = boardRef.current.children;
-    const square = squares[arrayToIndex(y, x)];
-    const checkedKing = pieces.find((el) =>
-      el.className.includes(checked.side + 'King')
-    );
-    const { left: squareLeft, top: squareTop } = square.getBoundingClientRect();
-    const { left: pieceLeft, top: pieceTop } =
-      checkedKing.getBoundingClientRect();
-
-    console.log(y, x);
-
-    if (squareLeft === pieceLeft && squareTop === pieceTop) {
-      checkedKing.style.background =
+    if (checked.side) {
+      [...piecesRef.current.children].find((el) =>
+        el.className.includes(checked.side + 'King')
+      ).style.background =
         'radial-gradient(circle, rgba(255,0,0,1) 0%, rgba(134,134,134,0) 100%)';
-    } else {
-      clearBloom();
     }
   };
-
-  if (checked.side) {
-    bloom();
-  }
 
   const displayHint = (legalMoves, show) => {
     const indexList = legalMoves.map((move) => arrayToIndex(move[0], move[1]));
@@ -301,6 +289,9 @@ function Board(props) {
 
   const downHandler = (e, name, side) => {
     if (checkmate) return;
+    if (checked.side && name.includes(checked.side + 'King')) {
+      clearBloom();
+    }
 
     const square = getSquareOfCursor(e);
     const coords = getCoords(square, 0);
