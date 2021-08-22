@@ -1,6 +1,5 @@
 import whiteKnight from './../../img/whiteKnight.svg';
 import blackKnight from './../../img/blackKnight.svg';
-import './style/Pieces.css';
 
 const Knight = (props) => {
   const clickDownHandler = (e) => {

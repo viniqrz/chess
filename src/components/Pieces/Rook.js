@@ -1,6 +1,5 @@
 import whiteRook from './../../img/whiteRook.svg';
 import blackRook from './../../img/blackRook.svg';
-import './style/Pieces.css';
 
 const Rook = (props) => {
   const clickDownHandler = (e) => {

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 
-import './Board.css';
+import './Board.scss';
 import moveSfx from './../../sfx/moveSfx.wav';
 
 import getInitialMap from './../../getInitialMap';

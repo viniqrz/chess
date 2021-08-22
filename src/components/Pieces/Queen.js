@@ -1,6 +1,5 @@
 import whiteQueen from './../../img/whiteQueen.svg';
 import blackQueen from './../../img/blackQueen.svg';
-import './style/Pieces.css';
 
 const Queen = (props) => {
   const clickDownHandler = (e) => {

@@ -4,7 +4,7 @@ import Bishop from './Bishop';
 import Knight from './Knight';
 import Rook from './Rook';
 
-import './style/Pieces.css';
+import './style/Pieces.scss';
 
 const Pieces = (props) => {
   const { left, top, hold, onClickDown } = props;
