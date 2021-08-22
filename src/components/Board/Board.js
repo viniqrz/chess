@@ -314,12 +314,16 @@ function Board(props) {
       });
     }
 
+    console.log(map);
+
     if (checked.side && name.includes(checked.side) && !isKing) {
       if (!defenders.some((el) => el.name === name)) return;
 
       // for (const piece of Object.keys(map)) {
       //   if
       // }
+
+      console.log('defender');
 
       const defender = defenders.find((el) => el.name === name);
 
@@ -328,6 +332,8 @@ function Board(props) {
       const kingObject = getLegalMoves(name, coords, map);
       legalMoves = kingObject.legalMoves;
     }
+
+    // console.log(map);
 
     setHold(true);
     setPiece({ name, legalMoves, side, element: e.target.parentNode });

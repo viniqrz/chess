@@ -40,7 +40,7 @@ const useLegalMoves = () => {
               }
 
               // King as target case
-              if (name.includes('King')) {
+              if (name.includes('King') && !name.includes(side)) {
                 if (movLine === sqLine && i > legalIndex + 1) {
                   clearLines.push(movLine);
                 }
