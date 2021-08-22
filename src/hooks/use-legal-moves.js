@@ -2,7 +2,7 @@ const useLegalMoves = () => {
   return (curPiece, curPosition, map) => {
     const side = curPiece.includes('white') ? 'white' : 'black';
 
-    const checkPiecesAhead = (initLegalMoves) => {
+    const checkPiecesAhead = (initLegalMoves, pinLines = false) => {
       let newArr = initLegalMoves;
       let clearLines = [];
 
@@ -19,20 +19,27 @@ const useLegalMoves = () => {
           const [pieceY, pieceX] = coords;
 
           if (sqY === pieceY && sqX === pieceX) {
-            const legalIndex = newArr.findIndex((el) => el[0] === sqY && el[1] === sqX);
+            const legalIndex = newArr.findIndex(
+              (el) => el[0] === sqY && el[1] === sqX
+            );
 
             const filteredNewArr = newArr.filter((move, i) => {
               const movLine = move[2];
-              const isSameOrAfterPiece = (movLine === sqLine && i >= legalIndex);
+              const isSameOrAfterPiece = movLine === sqLine && i >= legalIndex;
+              const isAfterPiece = movLine === sqLine && i > legalIndex;
 
+              if (pinLines && name.includes(side)) return true;
+
+              // King as attacker case
               if (name.includes(side) && curPiece.includes('King')) {
                 if (isSameOrAfterPiece) {
                   clearLines.push(movLine);
                 }
 
-                return !(isSameOrAfterPiece);
-              }     
+                return !isSameOrAfterPiece;
+              }
 
+              // King as target case
               if (name.includes('King')) {
                 if (movLine === sqLine && i > legalIndex + 1) {
                   clearLines.push(movLine);
@@ -41,11 +48,12 @@ const useLegalMoves = () => {
                 return !(movLine === sqLine && i > legalIndex + 1);
               }
 
-              if (movLine === sqLine && i > legalIndex) {
+              // generic case
+              if (isAfterPiece) {
                 clearLines.push(movLine);
               }
 
-              return !(movLine === sqLine && i > legalIndex);
+              return !isAfterPiece;
             });
 
             newArr = filteredNewArr;
@@ -54,6 +62,94 @@ const useLegalMoves = () => {
       });
 
       return newArr;
+    };
+
+    const checkForPin = (initLegalMoves) => {
+      const pieceNames = Object.keys(map);
+      const { pinLines } = map[side + 'King'];
+      const [curY, curX] = curPosition;
+      const alliesInLine = [];
+
+      let opponentInLine = '';
+      let pinnedLine;
+
+      pinLines.forEach((el) => {
+        const [pinY, pinX, pinDeg] = el;
+        if (pinY === curY && pinX === curX) {
+          alliesInLine.push(curPiece);
+          pinnedLine = pinLines.filter((el) => el[2] === pinDeg);
+          return true;
+        }
+
+        return false;
+      });
+
+      if (alliesInLine.length === 0) return initLegalMoves;
+
+      // seek enemies in line
+      pieceNames.forEach((pieceName) => {
+        if (pieceName.includes(side)) return;
+        if (pieceName.includes('King')) return;
+        if (pieceName.includes('Knight')) return;
+
+        const [pieceY, pieceX] = map[pieceName].coords;
+
+        pinnedLine.forEach((el) => {
+          const [pinY, pinX] = el;
+          if (pinY === pieceY && pinX === pieceX) {
+            opponentInLine = pieceName;
+          }
+        });
+      });
+
+      if (!opponentInLine) return initLegalMoves;
+
+      // seek allies in line
+      pieceNames.forEach((pieceName) => {
+        if (
+          !pieceName.includes(side) ||
+          pieceName.includes(curPiece) ||
+          pieceName.includes('King')
+        )
+          return;
+
+        const [pieceY, pieceX] = map[pieceName].coords;
+
+        pinnedLine.forEach((el) => {
+          const [pinY, pinX] = el;
+          if (pinY === pieceY && pinX === pieceX) {
+            alliesInLine.push(pieceName);
+          }
+        });
+      });
+
+      // console.log(alliesInLine);
+
+      if (alliesInLine.length >= 2) return initLegalMoves;
+
+      const oppMoves = map[opponentInLine].legalMoves;
+      const isThreat = oppMoves.some((move) => {
+        const [oppY, oppX] = move;
+
+        return oppY === curY && oppX === curX;
+      });
+
+      if (!isThreat) return initLegalMoves;
+
+      let finalMoves = [];
+
+      initLegalMoves.forEach((move) => {
+        const [moveY, moveX] = move;
+        pinnedLine.forEach((sq) => {
+          const [pinY, pinX] = sq;
+
+          if (pinY === moveY && pinX === moveX) {
+            finalMoves.push(move);
+          }
+        });
+      });
+
+      return finalMoves;
     };
 
     let movesArr = [];
@@ -173,8 +269,9 @@ const useLegalMoves = () => {
       movesArr = getLine315deg(init, movesArr);
 
       movesArr = checkPiecesAhead(movesArr);
+      movesArr = checkForPin(movesArr);
 
-      return { legalMoves: movesArr, guarded: movesArr };
+      return { legalMoves: movesArr, guarded: movesArr, pinLines: movesArr };
     };
 
     const getBishopMoves = (init) => {
@@ -184,8 +281,9 @@ const useLegalMoves = () => {
       movesArr = getLine315deg(init, movesArr);
 
       movesArr = checkPiecesAhead(movesArr);
+      movesArr = checkForPin(movesArr);
 
-      return { legalMoves: movesArr, guarded: movesArr };
+      return { legalMoves: movesArr, guarded: movesArr, pinLines: movesArr };
     };
 
     const getRookMoves = (init) => {
@@ -195,8 +293,9 @@ const useLegalMoves = () => {
       movesArr = getLine270deg(init, movesArr);
 
       movesArr = checkPiecesAhead(movesArr);
+      movesArr = checkForPin(movesArr);
 
-      return { legalMoves: movesArr, guarded: movesArr };
+      return { legalMoves: movesArr, guarded: movesArr, pinLines: movesArr };
     };
 
     const getKnightMoves = (init) => {
@@ -221,7 +320,9 @@ const useLegalMoves = () => {
         }
       }
 
-      return { legalMoves: movesArr, guarded: movesArr };
+      movesArr = checkForPin(movesArr);
+
+      return { legalMoves: movesArr, guarded: movesArr, pinLines: movesArr };
     };
 
     if (curPiece.includes('King')) {
@@ -236,8 +337,9 @@ const useLegalMoves = () => {
         if (y >= 1 && y <= 8 && x >= 1 && x <= 8 && !isEqual) {
           movesArr.push(possible);
         }
-      }
+      };
 
+      // King Moves
       pushMove(curPosition[0] - 1, curPosition[1], '0');
       pushMove(curPosition[0] - 1, curPosition[1] + 1, '45');
       pushMove(curPosition[0], curPosition[1] + 1, '90');
@@ -247,6 +349,19 @@ const useLegalMoves = () => {
       pushMove(curPosition[0], curPosition[1] - 1, '270');
       pushMove(curPosition[0] - 1, curPosition[1] - 1, '315');
 
+      //King Possible Pin Lines
+      let pinLines = [];
+
+      pinLines = pinLines = getLine0deg(curPosition, pinLines);
+      pinLines = getLine45deg(curPosition, pinLines);
+      pinLines = getLine90deg(curPosition, pinLines);
+      pinLines = getLine135deg(curPosition, pinLines);
+      pinLines = getLine180deg(curPosition, pinLines);
+      pinLines = getLine225deg(curPosition, pinLines);
+      pinLines = getLine270deg(curPosition, pinLines);
+      pinLines = getLine315deg(curPosition, pinLines);
+
+      pinLines = checkPiecesAhead(pinLines, true);
 
       const pieces = Object.keys(map);
       let filteredMovesArr = [];
@@ -259,8 +374,9 @@ const useLegalMoves = () => {
         pieces.forEach((piece) => {
           if (!isLegal || piece.includes(side)) return;
 
-          const opponentMoves = piece.includes('King') ?
-            map[piece].guarded : map[piece].legalMoves;
+          const opponentMoves = piece.includes('King')
+            ? map[piece].guarded
+            : map[piece].legalMoves;
 
           opponentMoves.forEach((el) => {
             if (el[0] === y && el[1] === x) {
@@ -274,7 +390,7 @@ const useLegalMoves = () => {
 
       filteredMovesArr = checkPiecesAhead(filteredMovesArr);
 
-      return { legalMoves: filteredMovesArr, guarded: movesArr };
+      return { legalMoves: filteredMovesArr, guarded: movesArr, pinLines };
     }
 
     if (curPiece.includes('Queen')) {
