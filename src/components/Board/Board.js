@@ -8,10 +8,15 @@ import squares from '../../squares';
 
 import usePieces from './../../hooks/use-pieces';
 import useLegalMoves from './../../hooks/use-legal-moves';
+import useBoard from './../../hooks/use-board';
+import useBloom from './../../hooks/use-bloom'
 
 import Pieces from './../Pieces/Pieces.js';
 import SideCoords from './../SideCoords/SideCoords';
 import UpperCoords from './../UpperCoords/UpperCoords';
+
+const bloomBg =
+  'radial-gradient(circle, rgba(255,0,0,1) 0%, rgba(134,134,134,0) 100%)';
 
 function Board(props) {
   const [hold, setHold] = useState(false);
@@ -32,17 +37,16 @@ function Board(props) {
 
   const getLegalMoves = useLegalMoves();
   const arrange = usePieces(map);
+  const [getSquareOfCursor, displayHint] = useBoard(boardRef);
+  const [bloom, clearBloom] = useBloom(piecesRef);
 
   window.addEventListener('resize', () => arrange(map));
 
   useEffect(() => {
     if (checked.side) {
-      [...piecesRef.current.children].find((el) =>
-        el.className.includes(checked.side + 'King')
-      ).style.background =
-        'radial-gradient(circle, rgba(255,0,0,1) 0%, rgba(134,134,134,0) 100%)';
+      bloom(checked.side);
     }
-  }, [checked]);
+  }, [checked, bloom]);
 
   const updateMap = (curPiece = piece.name) => {
     const newMap = { ...map };
@@ -65,6 +69,21 @@ function Board(props) {
     setMap(newMap);
 
     return newMap;
+  };
+
+  const removeFromMap = (name) => {
+    const newMap = { ...map };
+
+    newMap[name].legalMoves = [];
+    newMap[name].coords = [0, 0];
+
+    if (checked.side) {
+      setChecked({ side: '', line: '' });
+      setDefenders([]);
+      clearBloom(checked.side);
+    }
+
+    setMap(newMap);
   };
 
   if (checked.side && defenders.length < 1) {
@@ -99,56 +118,12 @@ function Board(props) {
 
     const kingMoves = map[checked.side + 'King'].legalMoves;
 
-    if (defendersList.length === 0 && kingMoves.length === 0)
+    if (defendersList.length === 0 && kingMoves.length === 0) {
       setCheckmate(true);
+    }
 
     setDefenders(defendersList.length === 0 ? [null] : defendersList);
   }
-
-  const arrayToIndex = (y, x) => y * 8 - (8 - [x]) - 1;
-
-  const clearBloom = () => {
-    const checkedKing = [...piecesRef.current.children].find((el) =>
-      el.className.includes(checked.side + 'King')
-    );
-
-    checkedKing.style.background =
-      'radial-gradient(circle, rgba(255,0,0,1) 0%, rgba(134,134,134,0) 0%)';
-  };
-
-  const bloom = () => {
-    if (checked.side) {
-      [...piecesRef.current.children].find((el) =>
-        el.className.includes(checked.side + 'King')
-      ).style.background =
-        'radial-gradient(circle, rgba(255,0,0,1) 0%, rgba(134,134,134,0) 100%)';
-    }
-  };
-
-  const displayHint = (legalMoves, show) => {
-    const indexList = legalMoves.map((move) => arrayToIndex(move[0], move[1]));
-    indexList.forEach(
-      (i) => (boardRef.current.children[i].children[0].style.opacity = show)
-    );
-  };
-
-  const getSquareOfCursor = (e) => {
-    const squaresArr = Array.from(boardRef.current.children);
-
-    let element;
-
-    squaresArr.forEach((square) => {
-      const { left, width, height, top } = square.getBoundingClientRect();
-
-      if (left < e.clientX && left + width > e.clientX) {
-        if (top < e.clientY && top + height > e.clientY) {
-          element = square;
-        }
-      }
-    });
-
-    return element || '';
-  };
 
   const getCoords = (element, moment) => {
     const squaresArr = Array.from(boardRef.current.children);
@@ -165,21 +140,6 @@ function Board(props) {
     }
 
     return curPosition;
-  };
-
-  const removeFromMap = (name) => {
-    const newMap = { ...map };
-
-    newMap[name].legalMoves = [];
-    newMap[name].coords = [0, 0];
-
-    if (checked.side) {
-      setChecked({ side: '', line: '' });
-      setDefenders([]);
-      clearBloom();
-    }
-
-    setMap(newMap);
   };
 
   const isIlegal = (square) => {
@@ -240,7 +200,7 @@ function Board(props) {
     setTimeout(() => {
       movPiece.parentNode.style.transition = 'none';
       if (checked.side && ilegal) {
-        bloom();
+        bloom(checked.side);
       }
     }, duration + 20);
   };
@@ -282,7 +242,7 @@ function Board(props) {
       if (checked.side && piece.name.includes(checked.side)) {
         setChecked({ side: '', line: '' });
         setDefenders([]);
-        clearBloom();
+        clearBloom(checked.side);
       }
     }
   };
@@ -290,7 +250,7 @@ function Board(props) {
   const downHandler = (e, name, side) => {
     if (checkmate) return;
     if (checked.side && name.includes(checked.side + 'King')) {
-      clearBloom();
+      clearBloom(checked.side);
     }
 
     const square = getSquareOfCursor(e);
@@ -314,16 +274,8 @@ function Board(props) {
       });
     }
 
-    console.log(map);
-
     if (checked.side && name.includes(checked.side) && !isKing) {
       if (!defenders.some((el) => el.name === name)) return;
-
-      // for (const piece of Object.keys(map)) {
-      //   if
-      // }
-
-      console.log('defender');
 
       const defender = defenders.find((el) => el.name === name);
 
@@ -332,8 +284,6 @@ function Board(props) {
       const kingObject = getLegalMoves(name, coords, map);
       legalMoves = kingObject.legalMoves;
     }
-
-    // console.log(map);
 
     setHold(true);
     setPiece({ name, legalMoves, side, element: e.target.parentNode });
