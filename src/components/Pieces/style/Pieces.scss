@@ -1,0 +1,12 @@
+.piece {
+  width: calc((31rem - 1rem) * 0.125);
+  height: calc(30rem * 0.125);
+  position: absolute;
+  z-index: 1;
+  opacity: 0;
+}
+
+.piece img {
+  width: 100%;
+  height: 100%;
+}
