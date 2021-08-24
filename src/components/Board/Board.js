@@ -9,7 +9,7 @@ import squares from './../../squares';
 import usePieces from './../../hooks/use-pieces';
 import useLegalMoves from './../../hooks/use-legal-moves';
 import useBoard from './../../hooks/use-board';
-import useBloom from './../../hooks/use-bloom'
+import useBloom from './../../hooks/use-bloom';
 
 import Pieces from './../Pieces/Pieces.js';
 import SideCoords from './../SideCoords/SideCoords';
