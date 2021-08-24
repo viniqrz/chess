@@ -3,8 +3,8 @@ import { useState, useRef, useEffect } from 'react';
 import './Board.scss';
 import moveSfx from './../../sfx/moveSfx.wav';
 
-import getInitialMap from './../../getInitialMap';
-import squares from '../../squares';
+import getInitialMap from './../../data/getInitialMap';
+import squares from './../../squares';
 
 import usePieces from './../../hooks/use-pieces';
 import useLegalMoves from './../../hooks/use-legal-moves';
@@ -14,9 +14,6 @@ import useBloom from './../../hooks/use-bloom'
 import Pieces from './../Pieces/Pieces.js';
 import SideCoords from './../SideCoords/SideCoords';
 import UpperCoords from './../UpperCoords/UpperCoords';
-
-const bloomBg =
-  'radial-gradient(circle, rgba(255,0,0,1) 0%, rgba(134,134,134,0) 100%)';
 
 function Board(props) {
   const [hold, setHold] = useState(false);
@@ -38,15 +35,9 @@ function Board(props) {
   const getLegalMoves = useLegalMoves();
   const arrange = usePieces(map);
   const [getSquareOfCursor, displayHint] = useBoard(boardRef);
-  const [bloom, clearBloom] = useBloom(piecesRef);
+  const [bloom, clearBloom] = useBloom(piecesRef, boardRef);
 
   window.addEventListener('resize', () => arrange(map));
-
-  useEffect(() => {
-    if (checked.side) {
-      bloom(checked.side);
-    }
-  }, [checked, bloom]);
 
   const updateMap = (curPiece = piece.name) => {
     const newMap = { ...map };
@@ -54,6 +45,7 @@ function Board(props) {
     if (curPiece === piece.name) newMap[curPiece].coords = final;
 
     const { legalMoves, guarded, pinLines } = getLegalMoves(
+      props.side,
       curPiece,
       newMap[curPiece].coords,
       map
@@ -189,6 +181,7 @@ function Board(props) {
       legalMoves.forEach((move) => {
         if (move[0] === y && move[1] === x) {
           setChecked({ side: kingSide, line: move[2] || '' });
+          bloom(kingSide);
         }
       });
     });
@@ -281,7 +274,7 @@ function Board(props) {
 
       legalMoves = [defender.move];
     } else {
-      const kingObject = getLegalMoves(name, coords, map);
+      const kingObject = getLegalMoves(props.side, name, coords, map);
       legalMoves = kingObject.legalMoves;
     }
 

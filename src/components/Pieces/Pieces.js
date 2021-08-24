@@ -3,6 +3,7 @@ import Queen from './Queen';
 import Bishop from './Bishop';
 import Knight from './Knight';
 import Rook from './Rook';
+import Pawn from './Pawn';
 
 import './style/Pieces.scss';
 
@@ -133,6 +134,94 @@ const Pieces = (props) => {
         left={left.whiteRook1}
         top={top.whiteRook1}
         index={1}
+        onClickDown={onClickDown}
+      />
+      <Pawn
+        side="white"
+        hold={hold}
+        left={left.whitePawn0}
+        top={top.whitePawn0}
+        index={0}
+        onClickDown={onClickDown}
+      />
+      <Pawn
+        side="white"
+        hold={hold}
+        left={left.whitePawn1}
+        top={top.whitePawn1}
+        index={1}
+        onClickDown={onClickDown}
+      />
+      <Pawn
+        side="white"
+        hold={hold}
+        left={left.whitePawn2}
+        top={top.whitePawn2}
+        index={2}
+        onClickDown={onClickDown}
+      />
+      {/* <Pawn
+        side="white"
+        hold={hold}
+        left={left.whitePawn3}
+        top={top.whitePawn3}
+        index={3}
+        onClickDown={onClickDown}
+      />
+      <Pawn
+        side="white"
+        hold={hold}
+        left={left.whitePawn4}
+        top={top.whitePawn4}
+        index={4}
+        onClickDown={onClickDown}
+      />
+      <Pawn
+        side="white"
+        hold={hold}
+        left={left.whitePawn5}
+        top={top.whitePawn5}
+        index={5}
+        onClickDown={onClickDown}
+      />
+      <Pawn
+        side="white"
+        hold={hold}
+        left={left.whitePawn6}
+        top={top.whitePawn6}
+        index={6}
+        onClickDown={onClickDown}
+      />
+      <Pawn
+        side="white"
+        hold={hold}
+        left={left.whitePawn7}
+        top={top.whitePawn7}
+        index={7}
+        onClickDown={onClickDown}
+      /> */}
+      <Pawn
+        side="black"
+        hold={hold}
+        left={left.blackPawn0}
+        top={top.blackPawn0}
+        index={0}
+        onClickDown={onClickDown}
+      />
+      <Pawn
+        side="black"
+        hold={hold}
+        left={left.blackPawn1}
+        top={top.blackPawn1}
+        index={1}
+        onClickDown={onClickDown}
+      />
+      <Pawn
+        side="black"
+        hold={hold}
+        left={left.blackPawn2}
+        top={top.blackPawn2}
+        index={2}
         onClickDown={onClickDown}
       />
     </>

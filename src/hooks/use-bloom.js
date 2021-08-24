@@ -1,4 +1,4 @@
-const useBloom = (piecesRef) => {
+const useBloom = (piecesRef, boardRef) => {
   const bloom = (checkedSide) => {
     [...piecesRef.current.children].find((el) =>
       el.className.includes(checkedSide + 'King')
@@ -10,7 +10,6 @@ const useBloom = (piecesRef) => {
     const checkedKing = [...piecesRef.current.children].find((el) =>
       el.className.includes(checkedSide + 'King')
     );
-
     checkedKing.style.background = 'none';
   };
 

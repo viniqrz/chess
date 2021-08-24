@@ -1,5 +1,5 @@
 const useLegalMoves = () => {
-  return (curPiece, curPosition, map) => {
+  return (playerSide, curPiece, curPosition, map) => {
     const side = curPiece.includes('white') ? 'white' : 'black';
 
     const checkPiecesAhead = (initLegalMoves, pinLines = false) => {
@@ -392,6 +392,51 @@ const useLegalMoves = () => {
 
       return { legalMoves: filteredMovesArr, guarded: movesArr, pinLines };
     }
+
+    if (curPiece.includes('Pawn')) {
+      const [curY, curX] = curPosition;
+
+      const mySide = () => {
+        if (curY === 7) {
+          return [[6, curX, '0'], [5, curX, '0']];
+        } else {
+          return [[curY - 1, curX, '0']];
+        }
+      }
+
+      const oppSide = () => {
+        if (curY === 2) {
+          return [[3, curX, '180'], [4, curX, '180']];
+        } else {
+          return [[curY + 1, curX, '180']];
+        }
+      }
+
+      if (playerSide === 'white') {
+        if (side === 'white') {
+          movesArr = mySide();
+        }
+
+        if (side === 'black') {
+          movesArr = oppSide();
+        }
+      }
+
+      if (playerSide === 'black') {
+        if (side === 'white') {
+          movesArr = oppSide();
+        }
+
+        if (side === 'black') {
+          movesArr = mySide();
+        }
+      }
+
+      movesArr = checkPiecesAhead(movesArr);
+
+      return { legalMoves: movesArr, guarded: movesArr, pinLines: movesArr };
+    }
+
 
     if (curPiece.includes('Queen')) {
       return getQueenMoves(curPosition);
