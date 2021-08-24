@@ -123,8 +123,6 @@ const useLegalMoves = () => {
         });
       });
 
-      // console.log(alliesInLine);
-
       if (alliesInLine.length >= 2) return initLegalMoves;
 
       const oppMoves = map[opponentInLine].legalMoves;
@@ -374,10 +372,12 @@ const useLegalMoves = () => {
         pieces.forEach((piece) => {
           if (!isLegal || piece.includes(side)) return;
 
-          const opponentMoves = piece.includes('King')
+          
+
+          const opponentMoves = piece.includes('King') || piece.includes('Pawn')
             ? map[piece].guarded
             : map[piece].legalMoves;
-
+          
           opponentMoves.forEach((el) => {
             if (el[0] === y && el[1] === x) {
               isLegal = false;
@@ -398,17 +398,17 @@ const useLegalMoves = () => {
 
       const mySide = () => {
         if (curY === 7) {
-          return [[6, curX, '0'], [5, curX, '0']];
+          return [[6, curX, '0'], [5, curX, '0'], [6, curX + 1, '45'], [6, curX - 1, '315']];
         } else {
-          return [[curY - 1, curX, '0']];
+          return [[curY - 1, curX, '0'], [curY - 1, curX + 1, '45'], [curY - 1, curX - 1, '315']];
         }
       }
 
       const oppSide = () => {
         if (curY === 2) {
-          return [[3, curX, '180'], [4, curX, '180']];
+          return [[3, curX + 1, '135'], [3, curX, '180'], [4, curX, '180'], [3, curX - 1, '225']];
         } else {
-          return [[curY + 1, curX, '180']];
+          return [[curY + 1, curX + 1, '135'], [curY + 1, curX, '180'], [curY + 1, curX - 1, '315']];
         }
       }
 
@@ -432,9 +432,44 @@ const useLegalMoves = () => {
         }
       }
 
-      movesArr = checkPiecesAhead(movesArr);
+      const conditionalMoves = movesArr.filter(el => {
+        return el[2] !== '180' && el[2] !== '0';
+      });
 
-      return { legalMoves: movesArr, guarded: movesArr, pinLines: movesArr };
+      let filteredMovesArr = [];
+      let cleaned = '';
+
+      const piecesArr = Object.keys(map);
+      movesArr.forEach((move) => {
+        const [moveY, moveX, moveLine] = move;
+        const isPassiveMove = moveLine === '180' || moveLine === '0';
+
+        let isEmpty = true;
+
+        piecesArr.forEach((pieceName) => {
+          if (!isEmpty) return;
+          
+          const [pieceY, pieceX] = map[pieceName].coords;
+
+          if (pieceY === moveY && pieceX === moveX) {
+            isEmpty = false;
+
+            if (!isPassiveMove && !pieceName.includes(side)) {
+              filteredMovesArr.push(move);
+            } else {
+              cleaned = moveLine;
+            }
+          }
+        });
+
+        if (isPassiveMove) {
+          if (isEmpty && moveLine !== cleaned) {
+            filteredMovesArr.push(move);
+          }
+        }
+      });
+
+      return { legalMoves: filteredMovesArr, guarded: conditionalMoves, pinLines: filteredMovesArr };
     }
 
 

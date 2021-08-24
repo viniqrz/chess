@@ -35,7 +35,7 @@ function Board(props) {
   const getLegalMoves = useLegalMoves();
   const arrange = usePieces(map);
   const [getSquareOfCursor, displayHint] = useBoard(boardRef);
-  const [bloom, clearBloom] = useBloom(piecesRef, boardRef);
+  const [bloom, clearBloom] = useBloom(piecesRef);
 
   window.addEventListener('resize', () => arrange(map));
 
@@ -53,7 +53,7 @@ function Board(props) {
 
     newMap[curPiece].legalMoves = legalMoves;
 
-    if (curPiece.includes('King')) {
+    if (curPiece.includes('King') || curPiece.includes('Pawn')) {
       newMap[curPiece].guarded = guarded;
       newMap[curPiece].pinLines = pinLines;
     }
@@ -68,6 +68,7 @@ function Board(props) {
 
     newMap[name].legalMoves = [];
     newMap[name].coords = [0, 0];
+    newMap[name].guarded = [[0, 0]];
 
     if (checked.side) {
       setChecked({ side: '', line: '' });

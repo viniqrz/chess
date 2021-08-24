@@ -1,4 +1,4 @@
-const useBloom = (piecesRef, boardRef) => {
+const useBloom = (piecesRef) => {
   const bloom = (checkedSide) => {
     [...piecesRef.current.children].find((el) =>
       el.className.includes(checkedSide + 'King')
