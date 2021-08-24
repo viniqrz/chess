@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 
 import './Board.scss';
 import moveSfx from './../../sfx/moveSfx.wav';
@@ -181,6 +181,7 @@ function Board(props) {
 
       legalMoves.forEach((move) => {
         if (move[0] === y && move[1] === x) {
+          console.log('-', map);
           setChecked({ side: kingSide, line: move[2] || '' });
           bloom(kingSide);
         }
@@ -218,6 +219,9 @@ function Board(props) {
 
     slidePiece(movPiece, 100, ilegal);
 
+    console.log(ilegal);
+    console.log()
+
     if (ilegal) {
       const { left, top } = initial.square.getBoundingClientRect();
       movPiece.parentNode.style.left = left + 'px';
@@ -238,6 +242,8 @@ function Board(props) {
         setDefenders([]);
         clearBloom(checked.side);
       }
+
+      isCheck();
     }
   };
 
@@ -314,7 +320,6 @@ function Board(props) {
 
     displayHint(piece.legalMoves, 0);
     makeMove(square, e.target);
-    isCheck();
   };
 
   return (
