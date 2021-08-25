@@ -40,12 +40,25 @@ function Board(props) {
 
   window.addEventListener('resize', () => arrange(map));
 
-  const promote = () => {
-
+  const promote = (side, name) => {
+    setPromoted(...promoted, { side, name });
   }
 
-  const addToMap = () => {
+  const addToMap = (coords, name) => {
+    const pieceObj = {
+      chess: "g1",
+      coords,
+      legalMoves: getLegalMoves(
+        props.side,
+        name,
+        coords,
+        map
+      ),
+    };
 
+    const newMap = { ...map, [name]: pieceObj };
+
+    setMap(newMap);
   }
 
   const updateMap = (curPiece = piece.name) => {
