@@ -27,6 +27,7 @@ function Board(props) {
   const [defenders, setDefenders] = useState([]);
   const [history, setHistory] = useState([]);
   const [checkmate, setCheckmate] = useState(false);
+  const [promoted, setPromoted] = useState([]);
 
   const boardRef = useRef();
   const piecesRef = useRef();
@@ -38,6 +39,14 @@ function Board(props) {
   const [bloom, clearBloom] = useBloom(piecesRef);
 
   window.addEventListener('resize', () => arrange(map));
+
+  const promote = () => {
+
+  }
+
+  const addToMap = () => {
+
+  }
 
   const updateMap = (curPiece = piece.name) => {
     const newMap = { ...map };
@@ -79,7 +88,7 @@ function Board(props) {
     setMap(newMap);
   };
 
-  if (checked.side && defenders.length < 1) {
+  const findCheckmate = () => {
     const threat = history[history.length - 1];
     const threatMoves = map[threat.piece].legalMoves;
     const threatCoords = threat.final;
@@ -116,6 +125,10 @@ function Board(props) {
     }
 
     setDefenders(defendersList.length === 0 ? [null] : defendersList);
+  }
+
+  if (checked.side && defenders.length < 1) {
+    findCheckmate();
   }
 
   const getCoords = (element, moment) => {
@@ -338,7 +351,13 @@ function Board(props) {
         </div>
       </div>
       <div ref={piecesRef} className="pieces">
-        <Pieces hold={hold} left={left} top={top} onClickDown={downHandler} />
+        <Pieces
+          promoted={promoted}
+          hold={hold}
+          left={left}
+          top={top}
+          onClickDown={downHandler}
+        />
       </div>
       {checkmate && <h1>CHECKMATE!</h1>}
     </div>

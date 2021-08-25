@@ -8,10 +8,93 @@ import Pawn from './Pawn';
 import './style/Pieces.scss';
 
 const Pieces = (props) => {
-  const { left, top, hold, onClickDown } = props;
+  const { promoted, left, top, hold, onClickDown } = props;
 
   return (
     <>
+      {
+        promoted.map((piece, i) => {
+          if (piece.name.includes('King')) {
+            return (
+              <King
+                key={i}
+                side={piece.side}
+                hold={hold}
+                left={left[piece.side + piece.name]}
+                top={top[piece.side + piece.name]}
+                onClickDown={onClickDown}
+              />
+            );
+          }
+
+          if (piece.name.includes('Queen')) {
+            return (
+              <Queen
+                key={i}
+                side={piece.side}
+                hold={hold}
+                left={left[piece.side + piece.name]}
+                top={top[piece.side + piece.name]}
+                onClickDown={onClickDown}
+              />
+            );
+          }
+
+          if (piece.name.includes('Bishop')) {
+            return (
+              <Bishop
+                key={i}
+                side={piece.side}
+                hold={hold}
+                left={left[piece.side + piece.name]}
+                top={top[piece.side + piece.name]}
+                onClickDown={onClickDown}
+              />
+            );
+          }
+
+          if (piece.name.includes('Knight')) {
+            return (
+              <Knight
+                key={i}
+                side={piece.side}
+                hold={hold}
+                left={left[piece.side + piece.name]}
+                top={top[piece.side + piece.name]}
+                onClickDown={onClickDown}
+              />
+            );
+          }
+
+          if (piece.name.includes('Rook')) {
+            return (
+              <Rook
+                key={i}
+                side={piece.side}
+                hold={hold}
+                left={left[piece.side + piece.name]}
+                top={top[piece.side + piece.name]}
+                onClickDown={onClickDown}
+              />
+            );
+          }
+
+          if (piece.name.includes('Pawn')) {
+            return (
+              <Pawn
+                key={i}
+                side={piece.side}
+                hold={hold}
+                left={left[piece.side + piece.name]}
+                top={top[piece.side + piece.name]}
+                onClickDown={onClickDown}
+              />
+            );
+          }
+
+          return false;
+        })
+      }
       <King
         side="white"
         hold={hold}
