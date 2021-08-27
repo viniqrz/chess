@@ -14,6 +14,7 @@ import useBloom from './../../hooks/use-bloom';
 import Pieces from './../Pieces/Pieces.js';
 import SideCoords from './../SideCoords/SideCoords';
 import UpperCoords from './../UpperCoords/UpperCoords';
+import PromotionMenu from './../PromotionMenu/PromotionMenu';
 
 function Board(props) {
   const [hold, setHold] = useState(false);
@@ -28,6 +29,7 @@ function Board(props) {
   const [history, setHistory] = useState([]);
   const [checkmate, setCheckmate] = useState(false);
   const [promoted, setPromoted] = useState([]);
+  const [isPromoting, setIsPromoting] = useState('');
 
   const boardRef = useRef();
   const piecesRef = useRef();
@@ -39,6 +41,44 @@ function Board(props) {
   const [bloom, clearBloom] = useBloom(piecesRef);
 
   window.addEventListener('resize', () => arrange(map));
+
+  const displayPromotionMenu = () => {
+
+  }
+
+  const checkForPromotion = () => {
+    if (!piece.name.includes('Pawn')) return;
+
+    const [y] = final;
+
+    if (props.side === 'white') {
+      if (piece.side === 'white') {
+        if (y === 1) {
+          setIsPromoting(piece.side);
+        }
+      }
+  
+      if (piece.side === 'black') {
+        if (y === 8) {
+          setIsPromoting(piece.side);
+        }
+      }
+    }
+
+    if (props.side === 'black') {
+      if (piece.side === 'white') {
+        if (y === 8) {
+          setIsPromoting(piece.side);
+        }
+      }
+  
+      if (piece.side === 'black') {
+        if (y === 1) {
+          setIsPromoting(piece.side);
+        }
+      }
+    }
+  }
 
   const promote = (side, name) => {
     setPromoted(...promoted, { side, name });
@@ -270,6 +310,7 @@ function Board(props) {
       }
 
       isCheck();
+      checkForPromotion();
     }
   };
 
@@ -355,12 +396,11 @@ function Board(props) {
         className="board-container"
         onContextMenu={(e) => e.preventDefault()}
       >
+        { isPromoting && <PromotionMenu side={ isPromoting } /> }
         <UpperCoords side={props.side} />
-        <div className="inner-container">
-          <SideCoords side={props.side} />
-          <div ref={boardRef} className="board">
-            {squares}
-          </div>
+        <SideCoords side={props.side} />
+        <div ref={boardRef} className="board">
+          {squares}
         </div>
       </div>
       <div ref={piecesRef} className="pieces">
