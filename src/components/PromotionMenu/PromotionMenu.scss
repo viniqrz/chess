@@ -1,0 +1,35 @@
+.promotion-overlay {
+  position: fixed;
+  width: 31rem;
+  height: 31rem;
+  top: calc(50vh - 15.5rem);
+  left: calc(50% - 15.5rem);
+  z-index: 100000000;
+  background-color: rgba(1, 1, 1, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .promotion-menu {
+    width: 60%;
+    height: 5rem;
+    background-color: orange;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-radius: 10px;
+    padding: 0px 0.5rem;
+
+    img {
+      width: 20%;
+      background-color: rgba(1, 1, 1, 0.3);
+      border-radius: 10%;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    img:hover {
+      transform: scale(1.1);
+    }
+  }
+}
