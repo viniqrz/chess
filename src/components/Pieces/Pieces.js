@@ -11,21 +11,18 @@ import './style/Pieces.scss';
 const Pieces = (props) => {
   const { promoted, left, top, hold, onClickDown } = props;
 
-  // console.log(left);
-
   return (
     <>
       {promoted.map((piece, i) => {
-        console.log(left[piece.side + piece.name + piece.index]);
         if (piece.name.includes('Queen')) {
           return (
             <Queen
               key={i}
-              side={piece.side}
+              side={piece.name.slice(0, 5)}
               index={piece.index}
               hold={hold}
-              left={left[piece.side + piece.name + piece.index]}
-              top={top[piece.side + piece.name + piece.index]}
+              left={left[piece.name + piece.index]}
+              top={top[piece.name + piece.index]}
               onClickDown={onClickDown}
             />
           );
@@ -35,11 +32,11 @@ const Pieces = (props) => {
           return (
             <Bishop
               key={i}
-              side={piece.side}
+              side={piece.name.slice(0, 5)}
               index={piece.index}
               hold={hold}
-              left={left[piece.side + piece.name + piece.index]}
-              top={top[piece.side + piece.name + piece.index]}
+              left={left[piece.name + piece.index]}
+              top={top[piece.name + piece.index]}
               onClickDown={onClickDown}
             />
           );
@@ -49,11 +46,11 @@ const Pieces = (props) => {
           return (
             <Knight
               key={i}
-              side={piece.side}
+              side={piece.name.slice(0, 5)}
               index={piece.index}
               hold={hold}
-              left={left[piece.side + piece.name + piece.index]}
-              top={top[piece.side + piece.name + piece.index]}
+              left={left[piece.name + piece.index]}
+              top={top[piece.name + piece.index]}
               onClickDown={onClickDown}
             />
           );
@@ -63,11 +60,11 @@ const Pieces = (props) => {
           return (
             <Rook
               key={i}
-              side={piece.side}
+              side={piece.name.slice(0, 5)}
               index={piece.index}
               hold={hold}
-              left={left[piece.side + piece.name + piece.index]}
-              top={top[piece.side + piece.name + piece.index]}
+              left={left[piece.name + piece.index]}
+              top={top[piece.name + piece.index]}
               onClickDown={onClickDown}
             />
           );

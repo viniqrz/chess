@@ -46,14 +46,6 @@ function Board(props) {
     setIsPromoting(piece.side);
   };
 
-  const postSelect = (newPiece) => {
-    const newMap = addToMap(final, newPiece);
-    setTimeout(() => {
-      arrange(newMap);
-      console.log(piecesRef.current.children, newMap);
-    }, 100);
-  };
-
   const selectHandler = (selectedPiece) => {
     const name = selectedPiece;
     const index = Math.random().toString().slice(12);
@@ -61,7 +53,13 @@ function Board(props) {
     removeFromMap(piece.name);
     setIsPromoting('');
     setPromoted([...promoted, { name, index, side: piece.side }]);
-    postSelect(name + index);
+
+    const newMap = addToMap(final, name + index);
+
+    setTimeout(() => {
+      arrange(newMap);
+      console.log(piecesRef.current.children, newMap);
+    }, 100);
   };
 
   const checkForPromotion = () => {
@@ -96,10 +94,6 @@ function Board(props) {
         }
       }
     }
-  };
-
-  const promote = (side, name) => {
-    setPromoted(...promoted, { side, name });
   };
 
   const addToMap = (coords, name) => {

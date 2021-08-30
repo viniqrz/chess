@@ -16,7 +16,7 @@ const usePieces = (initMap) => {
     const arrayToIndex = (y, x) => y * 8 - (8 - [x]) - 1;
 
     pieces.forEach((piece) => {
-      // if (pieces.length > 22) console.log(piece.id, map, map[piece.id]);
+      if (pieces.length > 22) console.log(piece.id, map, map[piece.id]);
       const { coords } = map[piece.id];
 
       if (coords[0] === 0) return;
