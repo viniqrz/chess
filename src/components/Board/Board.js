@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 import './Board.scss';
 import moveSfx from './../../sfx/moveSfx.wav';
@@ -43,8 +43,26 @@ function Board(props) {
   window.addEventListener('resize', () => arrange(map));
 
   const displayPromotionMenu = () => {
+    setIsPromoting(piece.side);
+  };
 
-  }
+  const postSelect = (newPiece) => {
+    const newMap = addToMap(final, newPiece);
+    setTimeout(() => {
+      arrange(newMap);
+      console.log(piecesRef.current.children, newMap);
+    }, 100);
+  };
+
+  const selectHandler = (selectedPiece) => {
+    const name = selectedPiece;
+    const index = Math.random().toString().slice(12);
+    piece.element.style.display = 'none';
+    removeFromMap(piece.name);
+    setIsPromoting('');
+    setPromoted([...promoted, { name, index, side: piece.side }]);
+    postSelect(name + index);
+  };
 
   const checkForPromotion = () => {
     if (!piece.name.includes('Pawn')) return;
@@ -54,13 +72,13 @@ function Board(props) {
     if (props.side === 'white') {
       if (piece.side === 'white') {
         if (y === 1) {
-          setIsPromoting(piece.side);
+          displayPromotionMenu();
         }
       }
-  
+
       if (piece.side === 'black') {
         if (y === 8) {
-          setIsPromoting(piece.side);
+          displayPromotionMenu();
         }
       }
     }
@@ -68,38 +86,44 @@ function Board(props) {
     if (props.side === 'black') {
       if (piece.side === 'white') {
         if (y === 8) {
-          setIsPromoting(piece.side);
+          displayPromotionMenu();
         }
       }
-  
+
       if (piece.side === 'black') {
         if (y === 1) {
-          setIsPromoting(piece.side);
+          displayPromotionMenu();
         }
       }
     }
-  }
+  };
 
   const promote = (side, name) => {
     setPromoted(...promoted, { side, name });
-  }
+  };
 
   const addToMap = (coords, name) => {
-    const pieceObj = {
-      chess: "g1",
+    const { legalMoves, guarded, pinLines } = getLegalMoves(
+      props.side,
+      name,
       coords,
-      legalMoves: getLegalMoves(
-        props.side,
-        name,
-        coords,
-        map
-      ),
+      map
+    );
+
+    const pieceObj = {
+      chess: 'g1',
+      coords: coords,
+      legalMoves,
+      guarded,
+      pinLines,
     };
 
     const newMap = { ...map, [name]: pieceObj };
 
     setMap(newMap);
-  }
+
+    return newMap;
+  };
 
   const updateMap = (curPiece = piece.name) => {
     const newMap = { ...map };
@@ -139,6 +163,8 @@ function Board(props) {
     }
 
     setMap(newMap);
+
+    return newMap;
   };
 
   const findCheckmate = () => {
@@ -178,7 +204,7 @@ function Board(props) {
     }
 
     setDefenders(defendersList.length === 0 ? [null] : defendersList);
-  }
+  };
 
   if (checked.side && defenders.length < 1) {
     findCheckmate();
@@ -284,9 +310,6 @@ function Board(props) {
     }
 
     slidePiece(movPiece, 100, ilegal);
-
-    console.log(ilegal);
-    console.log()
 
     if (ilegal) {
       const { left, top } = initial.square.getBoundingClientRect();
@@ -396,7 +419,9 @@ function Board(props) {
         className="board-container"
         onContextMenu={(e) => e.preventDefault()}
       >
-        { isPromoting && <PromotionMenu side={ isPromoting } /> }
+        {isPromoting && (
+          <PromotionMenu onSelect={selectHandler} side={isPromoting} />
+        )}
         <UpperCoords side={props.side} />
         <SideCoords side={props.side} />
         <div ref={boardRef} className="board">

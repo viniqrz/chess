@@ -12,29 +12,33 @@ import whiteBishop from './../../img/whiteBishop.svg';
 import blackBishop from './../../img/blackBishop.svg';
 
 const PromotionMenu = (props) => {
+  const clickHandler = (e) => {
+    props.onSelect(e.target.alt);
+  };
+
   return (
     <div className="promotion-overlay">
       <div className="promotion-menu">
-        { props.side === 'white' &&  (
+        {props.side === 'white' && (
           <>
-            <img src={whiteQueen} alt="whiteQueen" />
-            <img src={whiteRook} alt="whiteRook" />
-            <img src={whiteKnight} alt="whiteKnight" />
-            <img src={whiteBishop} alt="whiteBishop" />
+            <img onClick={clickHandler} src={whiteQueen} alt="whiteQueen" />
+            <img onClick={clickHandler} src={whiteRook} alt="whiteRook" />
+            <img onClick={clickHandler} src={whiteKnight} alt="whiteKnight" />
+            <img onClick={clickHandler} src={whiteBishop} alt="whiteBishop" />
           </>
         )}
 
-        { props.side === 'black' &&  (
+        {props.side === 'black' && (
           <>
-            <img src={blackQueen} alt="blackQueen" />
-            <img src={blackRook} alt="blackRook" />
-            <img src={blackKnight} alt="blackKnight" />
-            <img src={blackBishop} alt="blackBishop" />
+            <img onClick={clickHandler} src={blackQueen} alt="blackQueen" />
+            <img onClick={clickHandler} src={blackRook} alt="blackRook" />
+            <img onClick={clickHandler} src={blackKnight} alt="blackKnight" />
+            <img onClick={clickHandler} src={blackBishop} alt="blackBishop" />
           </>
         )}
       </div>
     </div>
   );
-}
+};
 
 export default PromotionMenu;
