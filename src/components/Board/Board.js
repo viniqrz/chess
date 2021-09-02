@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 
 import './Board.scss';
 import moveSfx from './../../sfx/moveSfx.wav';
@@ -58,7 +58,6 @@ function Board(props) {
 
     setTimeout(() => {
       arrange(newMap);
-      console.log(piecesRef.current.children, newMap);
     }, 100);
   };
 
@@ -267,13 +266,19 @@ function Board(props) {
 
       legalMoves.forEach((move) => {
         if (move[0] === y && move[1] === x) {
-          console.log('-', map);
           setChecked({ side: kingSide, line: move[2] || '' });
           bloom(kingSide);
         }
       });
     });
   };
+
+  const findPromotionCheck = () => {
+    if (!history[history.length - 1].piece.includes('Pawn')) return;
+    if (!map[piece.name].coords[0] === 0) return;
+
+    isCheck();
+  }
 
   const slidePiece = (movPiece, duration, ilegal) => {
     movPiece.parentNode.style.transition = 'all ' + duration + 'ms';
@@ -405,6 +410,10 @@ function Board(props) {
     displayHint(piece.legalMoves, 0);
     makeMove(square, e.target);
   };
+
+  if (promoted.length > 0 && checked.side === '') {
+    findPromotionCheck();
+  }
 
   return (
     <div onMouseUp={upHandler} onMouseMove={moveHandler} className="page">
