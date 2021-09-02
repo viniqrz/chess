@@ -43,7 +43,7 @@ function Board(props) {
   window.addEventListener('resize', () => arrange(map));
 
   const displayPromotionMenu = () => {
-
+    setIsPromoting(piece.side);
   }
 
   const checkForPromotion = () => {
@@ -54,13 +54,13 @@ function Board(props) {
     if (props.side === 'white') {
       if (piece.side === 'white') {
         if (y === 1) {
-          setIsPromoting(piece.side);
+          displayPromotionMenu();
         }
       }
   
       if (piece.side === 'black') {
         if (y === 8) {
-          setIsPromoting(piece.side);
+          displayPromotionMenu();
         }
       }
     }
@@ -68,13 +68,13 @@ function Board(props) {
     if (props.side === 'black') {
       if (piece.side === 'white') {
         if (y === 8) {
-          setIsPromoting(piece.side);
+          displayPromotionMenu();
         }
       }
   
       if (piece.side === 'black') {
         if (y === 1) {
-          setIsPromoting(piece.side);
+          displayPromotionMenu();
         }
       }
     }
