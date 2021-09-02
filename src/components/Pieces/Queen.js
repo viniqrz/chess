@@ -3,7 +3,7 @@ import blackQueen from './../../img/blackQueen.svg';
 
 const Queen = (props) => {
   const clickDownHandler = (e) => {
-    props.onClickDown(e, `${props.side}Queen`, props.side);
+    props.onClickDown(e, `${props.side}Queen${props.index}`, props.side);
   };
 
   return (
@@ -14,13 +14,13 @@ const Queen = (props) => {
         top: props.top + 'px',
       }}
       onMouseDown={clickDownHandler}
-      className={`piece ${props.side}Queen noselect`}
-      id={`${props.side}Queen`}
+      className={`piece ${props.side}Queen${props.index} noselect`}
+      id={`${props.side}Queen${props.index}`}
     >
       <img
         draggable="false"
         src={props.side === 'white' ? whiteQueen : blackQueen}
-        alt={props.side + 'Queen'}
+        alt={props.side + 'Queen' + props.index}
       />
     </div>
   );

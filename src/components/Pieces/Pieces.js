@@ -1,3 +1,4 @@
+import React from 'react';
 import King from './King';
 import Queen from './Queen';
 import Bishop from './Bishop';
@@ -12,89 +13,65 @@ const Pieces = (props) => {
 
   return (
     <>
-      {
-        promoted.map((piece, i) => {
-          if (piece.name.includes('King')) {
-            return (
-              <King
-                key={i}
-                side={piece.side}
-                hold={hold}
-                left={left[piece.side + piece.name]}
-                top={top[piece.side + piece.name]}
-                onClickDown={onClickDown}
-              />
-            );
-          }
+      {promoted.map((piece, i) => {
+        if (piece.name.includes('Queen')) {
+          return (
+            <Queen
+              key={i}
+              side={piece.name.slice(0, 5)}
+              index={piece.index}
+              hold={hold}
+              left={left[piece.name + piece.index]}
+              top={top[piece.name + piece.index]}
+              onClickDown={onClickDown}
+            />
+          );
+        }
 
-          if (piece.name.includes('Queen')) {
-            return (
-              <Queen
-                key={i}
-                side={piece.side}
-                hold={hold}
-                left={left[piece.side + piece.name]}
-                top={top[piece.side + piece.name]}
-                onClickDown={onClickDown}
-              />
-            );
-          }
+        if (piece.name.includes('Bishop')) {
+          return (
+            <Bishop
+              key={i}
+              side={piece.name.slice(0, 5)}
+              index={piece.index}
+              hold={hold}
+              left={left[piece.name + piece.index]}
+              top={top[piece.name + piece.index]}
+              onClickDown={onClickDown}
+            />
+          );
+        }
 
-          if (piece.name.includes('Bishop')) {
-            return (
-              <Bishop
-                key={i}
-                side={piece.side}
-                hold={hold}
-                left={left[piece.side + piece.name]}
-                top={top[piece.side + piece.name]}
-                onClickDown={onClickDown}
-              />
-            );
-          }
+        if (piece.name.includes('Knight')) {
+          return (
+            <Knight
+              key={i}
+              side={piece.name.slice(0, 5)}
+              index={piece.index}
+              hold={hold}
+              left={left[piece.name + piece.index]}
+              top={top[piece.name + piece.index]}
+              onClickDown={onClickDown}
+            />
+          );
+        }
 
-          if (piece.name.includes('Knight')) {
-            return (
-              <Knight
-                key={i}
-                side={piece.side}
-                hold={hold}
-                left={left[piece.side + piece.name]}
-                top={top[piece.side + piece.name]}
-                onClickDown={onClickDown}
-              />
-            );
-          }
+        if (piece.name.includes('Rook')) {
+          return (
+            <Rook
+              key={i}
+              side={piece.name.slice(0, 5)}
+              index={piece.index}
+              hold={hold}
+              left={left[piece.name + piece.index]}
+              top={top[piece.name + piece.index]}
+              onClickDown={onClickDown}
+            />
+          );
+        }
 
-          if (piece.name.includes('Rook')) {
-            return (
-              <Rook
-                key={i}
-                side={piece.side}
-                hold={hold}
-                left={left[piece.side + piece.name]}
-                top={top[piece.side + piece.name]}
-                onClickDown={onClickDown}
-              />
-            );
-          }
-
-          if (piece.name.includes('Pawn')) {
-            return (
-              <Pawn
-                key={i}
-                side={piece.side}
-                hold={hold}
-                left={left[piece.side + piece.name]}
-                top={top[piece.side + piece.name]}
-                onClickDown={onClickDown}
-              />
-            );
-          }
-
-          return false;
-        })
-      }
+        return false;
+      })}
       <King
         side="white"
         hold={hold}
@@ -111,16 +88,18 @@ const Pieces = (props) => {
       />
       <Queen
         side="black"
+        index={0}
         hold={hold}
-        left={left.blackQueen}
-        top={top.blackQueen}
+        left={left.blackQueen0}
+        top={top.blackQueen0}
         onClickDown={onClickDown}
       />
       <Queen
         side="white"
+        index={0}
         hold={hold}
-        left={left.whiteQueen}
-        top={top.whiteQueen}
+        left={left.whiteQueen0}
+        top={top.whiteQueen0}
         onClickDown={onClickDown}
       />
       <Bishop
@@ -311,4 +290,4 @@ const Pieces = (props) => {
   );
 };
 
-export default Pieces;
+export default React.memo(Pieces);
