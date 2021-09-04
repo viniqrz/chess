@@ -400,6 +400,17 @@ function Board(props) {
     }
   };
 
+  const isCastle = (square, pieceImg) => {
+    const [fY, fX] = final;
+    let castleMove = false;
+
+    piece.legalMoves.forEach(el => {
+      if (el[3] && el[0] === fY && el[1] === fX) castleMove = true;
+    });
+
+    if (!castleMove) return makeMove(square, pieceImg);
+  }
+
   const upHandler = (e) => {
     if (!hold) return;
     setHold(false);
@@ -408,7 +419,12 @@ function Board(props) {
     piece.element.style.zIndex = 1;
 
     displayHint(piece.legalMoves, 0);
-    makeMove(square, e.target);
+
+    if (piece.name.includes('King')) {
+      isCastle(square, e.target);
+    } else {
+      makeMove(square, e.target);
+    }
   };
 
   if (promoted.length > 0 && checked.side === '') {
