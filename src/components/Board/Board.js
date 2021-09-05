@@ -119,11 +119,15 @@ function Board(props) {
     return newMap;
   };
 
-  const updateMap = (curPiece = piece.name) => {
+  const updateMap = (curPiece = piece.name, castle=false) => {
     const newMap = { ...map };
 
-    if (curPiece === piece.name) newMap[curPiece].coords = final;
-
+    if (curPiece === piece.name) {
+      newMap[curPiece].coords = final;
+    } else if (castle) {
+      newMap[curPiece].coords = castle;
+    };
+    
     const { legalMoves, guarded, pinLines } = getLegalMoves(
       props.side,
       curPiece,
@@ -137,6 +141,12 @@ function Board(props) {
       newMap[curPiece].guarded = guarded;
       newMap[curPiece].pinLines = pinLines;
     }
+
+    if (curPiece.includes('Rook')) {
+      console.log('myrook', newMap);
+    }
+
+    // console.log(newMap);
 
     setMap(newMap);
 
@@ -293,9 +303,9 @@ function Board(props) {
     }, duration + 20);
   };
 
-  const updateHistory = () => {
+  const updateHistory = (pieceName) => {
     const move = {
-      piece: piece.name,
+      piece: pieceName,
       initial: initial.position,
       final,
     };
@@ -303,7 +313,7 @@ function Board(props) {
     setHistory([...history, move]);
   };
 
-  const makeMove = (finalSquare, movPiece) => {
+  const makeMove = (finalSquare, movPiece, castle=false) => {
     let ilegal = true;
 
     if (finalSquare) {
@@ -321,8 +331,8 @@ function Board(props) {
       movPiece.parentNode.style.left = left + 'px';
       movPiece.parentNode.style.top = top + 'px';
 
-      updateMap();
-      updateHistory();
+      updateMap(movPiece.parentNode.id, castle);
+      updateHistory(movPiece.parentNode.id);
 
       moveSoundRef.current.playbackRate = 1.5;
       moveSoundRef.current.play();
@@ -351,13 +361,16 @@ function Board(props) {
     const arrayToIndex = (y, x) => y * 8 - (8 - [x]) - 1;
     let index;
     let squareIndex;
+    let rookFinal;
 
     if (fX > initial.position[1]) {
       index = props.side === 'white' ? '1' : '0';
       squareIndex = arrayToIndex(fY, fX - 1);
+      rookFinal = [fY, fX - 1];
     } else {
       index = props.side === 'white' ? '0' : '1';
       squareIndex = arrayToIndex(fY, fX + 1);
+      rookFinal = [fY, fX + 1];
     }
 
     const rookName = piece.side + 'Rook' + index;
@@ -366,7 +379,7 @@ function Board(props) {
     const rookSquare = boardRef.current.children[squareIndex];
 
     makeMove(square, pieceImg);
-    makeMove(rookSquare, rookImg);
+    makeMove(rookSquare, rookImg, rookFinal);
   }
 
   const downHandler = (e, name, side) => {
@@ -448,6 +461,8 @@ function Board(props) {
       makeMove(square, e.target);
     }
   };
+
+  // console.log(map);
 
   if (promoted.length > 0 && !seekedPromotionCheck) findPromotionCheck();
 

@@ -260,6 +260,81 @@ const getInitialMap = (side) => {
             ],
       guarded: [],
     },
+    whitePawn3: {
+      chess: 'c2',
+      coords: side === 'white' ? [7, 4] : [2, 5],
+      legalMoves:
+        side === 'white'
+          ? [
+              [6, 4, '0'],
+              [5, 4, '0'],
+            ]
+          : [
+              [3, 5, '180'],
+              [4, 5, '180'],
+            ],
+      guarded: [],
+    },
+    whitePawn4: {
+      chess: 'c2',
+      coords: side === 'white' ? [7, 5] : [2, 4],
+      legalMoves:
+        side === 'white'
+          ? [
+              [6, 5, '0'],
+              [5, 5, '0'],
+            ]
+          : [
+              [3, 4, '180'],
+              [4, 4, '180'],
+            ],
+      guarded: [],
+    },
+    whitePawn5: {
+      chess: 'c2',
+      coords: side === 'white' ? [7, 6] : [2, 3],
+      legalMoves:
+        side === 'white'
+          ? [
+              [6, 6, '0'],
+              [5, 6, '0'],
+            ]
+          : [
+              [3, 3, '180'],
+              [4, 3, '180'],
+            ],
+      guarded: [],
+    },
+    whitePawn6: {
+      chess: 'c2',
+      coords: side === 'white' ? [7, 7] : [2, 2],
+      legalMoves:
+        side === 'white'
+          ? [
+              [6, 7, '0'],
+              [5, 7, '0'],
+            ]
+          : [
+              [3, 2, '180'],
+              [4, 2, '180'],
+            ],
+      guarded: [],
+    },
+    whitePawn7: {
+      chess: 'c2',
+      coords: side === 'white' ? [7, 8] : [2, 1],
+      legalMoves:
+        side === 'white'
+          ? [
+              [6, 8, '0'],
+              [5, 8, '0'],
+            ]
+          : [
+              [3, 1, '180'],
+              [4, 1, '180'],
+            ],
+      guarded: [],
+    },
     blackQueen0: {
       chess: 'd8',
       coords: side === 'white' ? [1, 4] : [8, 5],
@@ -522,6 +597,81 @@ const getInitialMap = (side) => {
               [6, 3, '0'],
               [5, 3, '0'],
             ],
+      guarded: [],
+    },
+    blackPawn3: {
+      chess: 'c2',
+      coords: side === 'white' ? [2, 5] : [7, 4],
+      legalMoves:
+        side === 'white'
+          ? [
+            [3, 5, '180'],
+            [4, 5, '180'],
+          ]
+          : [
+            [6, 4, '0'],
+            [5, 4, '0'],
+          ],
+      guarded: [],
+    },
+    blackPawn4: {
+      chess: 'c2',
+      coords: side === 'white' ? [2, 4] : [7, 5],
+      legalMoves:
+        side === 'white'
+          ? [
+            [3, 4, '180'],
+            [4, 4, '180'],
+          ]
+          : [
+            [6, 5, '0'],
+            [5, 5, '0'],
+          ],
+      guarded: [],
+    },
+    blackPawn5: {
+      chess: 'c2',
+      coords: side === 'white' ? [2, 3] : [7, 6],
+      legalMoves:
+        side === 'white'
+          ? [
+            [6, 3, '180'],
+            [5, 3, '180'],
+          ]
+          : [
+            [6, 6, '0'],
+            [5, 6, '0'],
+          ],
+      guarded: [],
+    },
+    blackPawn6: {
+      chess: 'c2',
+      coords: side === 'white' ? [2, 2] : [7, 7],
+      legalMoves:
+        side === 'white'
+          ? [
+            [6, 2, '180'],
+            [5, 2, '180'],
+          ]
+          : [
+            [6, 7, '0'],
+            [5, 7, '0'],
+          ],
+      guarded: [],
+    },
+    blackPawn7: {
+      chess: 'c2',
+      coords: side === 'white' ? [2, 1] : [7, 8],
+      legalMoves:
+        side === 'white'
+          ? [
+            [6, 1, '180'],
+            [5, 1, '180'],
+          ]
+          : [
+            [3, 8, '0'],
+            [4, 8, '0'],
+          ],
       guarded: [],
     },
   };
