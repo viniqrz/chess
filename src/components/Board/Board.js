@@ -30,6 +30,7 @@ function Board(props) {
   const [checkmate, setCheckmate] = useState(false);
   const [promoted, setPromoted] = useState([]);
   const [isPromoting, setIsPromoting] = useState('');
+  const [clearedCheck, setClearedCheck] = useState(true); 
 
   const boardRef = useRef();
   const piecesRef = useRef();
@@ -51,6 +52,7 @@ function Board(props) {
     const index = Math.random().toString().slice(12);
     piece.element.style.display = 'none';
     removeFromMap(piece.name);
+    setClearedCheck(false);
     setIsPromoting('');
     setPromoted([...promoted, { name, index, side: piece.side }]);
 
@@ -61,19 +63,19 @@ function Board(props) {
     }, 100);
   };
 
-  const checkForPromotion = () => {
-    if (!piece.name.includes('Pawn')) return;
+  const checkForPromotion = (curPiece) => {
+    if (!curPiece.name.includes('Pawn')) return;
 
     const [y] = final;
 
     if (props.side === 'white') {
-      if (piece.side === 'white') {
+      if (curPiece.side === 'white') {
         if (y === 1) {
           displayPromotionMenu();
         }
       }
 
-      if (piece.side === 'black') {
+      if (curPiece.side === 'black') {
         if (y === 8) {
           displayPromotionMenu();
         }
@@ -81,13 +83,13 @@ function Board(props) {
     }
 
     if (props.side === 'black') {
-      if (piece.side === 'white') {
+      if (curPiece.side === 'white') {
         if (y === 8) {
           displayPromotionMenu();
         }
       }
 
-      if (piece.side === 'black') {
+      if (curPiece.side === 'black') {
         if (y === 1) {
           displayPromotionMenu();
         }
@@ -253,9 +255,9 @@ function Board(props) {
     return ilegal;
   };
 
-  const isCheck = () => {
-    if (piece.name.includes('King')) return;
-    const kingSide = piece.name.includes('white') ? 'black' : 'white';
+  const isCheck = (pieceName) => {
+    if (pieceName.includes('King')) return;
+    const kingSide = pieceName.includes('white') ? 'black' : 'white';
     const [y, x] = map[kingSide + 'King'].coords;
 
     const pieces = Object.keys(map);
@@ -277,7 +279,8 @@ function Board(props) {
     if (!history[history.length - 1].piece.includes('Pawn')) return;
     if (!map[piece.name].coords[0] === 0) return;
 
-    isCheck();
+    isCheck(piece.name);
+    setClearedCheck(true);
   }
 
   const slidePiece = (movPiece, duration, ilegal) => {
@@ -331,10 +334,41 @@ function Board(props) {
         clearBloom(checked.side);
       }
 
-      isCheck();
-      checkForPromotion();
+      isCheck(movPiece.parentNode.id);
+      checkForPromotion(piece);
     }
   };
+
+  const isCastle = (square, pieceImg) => {
+    const [fY, fX] = final;
+    let castleMove = false;
+
+    piece.legalMoves.forEach(el => {
+      if (el[3] && el[0] === fY && el[1] === fX) castleMove = true;
+    });
+
+    if (!castleMove) return makeMove(square, pieceImg);
+
+    const arrayToIndex = (y, x) => y * 8 - (8 - [x]) - 1;
+    let index;
+    let squareIndex;
+
+    if (fX > initial.position[1]) {
+      index = props.side === 'white' ? '1' : '0';
+      squareIndex = arrayToIndex(fY, fX - 1);
+    } else {
+      index = props.side === 'white' ? '0' : '1';
+      squareIndex = arrayToIndex(fY, fX + 1);
+    }
+
+    const rookName = piece.side + 'Rook' + index;
+    const pieces = Array.from(piecesRef.current.children);
+    const rookImg= pieces.find((el) => el.id === rookName).children[0];
+    const rookSquare = boardRef.current.children[squareIndex];
+
+    makeMove(square, pieceImg);
+    makeMove(rookSquare, rookImg);
+  }
 
   const downHandler = (e, name, side) => {
     if (checkmate) return;
@@ -400,17 +434,6 @@ function Board(props) {
     }
   };
 
-  const isCastle = (square, pieceImg) => {
-    const [fY, fX] = final;
-    let castleMove = false;
-
-    piece.legalMoves.forEach(el => {
-      if (el[3] && el[0] === fY && el[1] === fX) castleMove = true;
-    });
-
-    if (!castleMove) return makeMove(square, pieceImg);
-  }
-
   const upHandler = (e) => {
     if (!hold) return;
     setHold(false);
@@ -428,7 +451,8 @@ function Board(props) {
   };
 
   if (promoted.length > 0 && checked.side === '') {
-    findPromotionCheck();
+    // if (clearedCheck) return;
+    // findPromotionCheck();
   }
 
   return (
