@@ -142,12 +142,6 @@ function Board(props) {
       newMap[curPiece].pinLines = pinLines;
     }
 
-    if (curPiece.includes('Rook')) {
-      console.log('myrook', newMap);
-    }
-
-    // console.log(newMap);
-
     setMap(newMap);
 
     return newMap;
@@ -461,8 +455,6 @@ function Board(props) {
       makeMove(square, e.target);
     }
   };
-
-  // console.log(map);
 
   if (promoted.length > 0 && !seekedPromotionCheck) findPromotionCheck();
 
