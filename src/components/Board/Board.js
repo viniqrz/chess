@@ -30,7 +30,7 @@ function Board(props) {
   const [checkmate, setCheckmate] = useState(false);
   const [promoted, setPromoted] = useState([]);
   const [isPromoting, setIsPromoting] = useState('');
-  const [clearedCheck, setClearedCheck] = useState(true); 
+  const [seekedPromotionCheck, setSeekedPromotionCheck] = useState(true); 
 
   const boardRef = useRef();
   const piecesRef = useRef();
@@ -43,20 +43,19 @@ function Board(props) {
 
   window.addEventListener('resize', () => arrange(map));
 
-  const displayPromotionMenu = () => {
-    setIsPromoting(piece.side);
-  };
+  const displayPromotionMenu = () => setIsPromoting(piece.side);
 
   const selectHandler = (selectedPiece) => {
     const name = selectedPiece;
     const index = Math.random().toString().slice(12);
     piece.element.style.display = 'none';
     removeFromMap(piece.name);
-    setClearedCheck(false);
     setIsPromoting('');
     setPromoted([...promoted, { name, index, side: piece.side }]);
 
     const newMap = addToMap(final, name + index);
+  
+    setSeekedPromotionCheck(false);
 
     setTimeout(() => {
       arrange(newMap);
@@ -280,7 +279,7 @@ function Board(props) {
     if (!map[piece.name].coords[0] === 0) return;
 
     isCheck(piece.name);
-    setClearedCheck(true);
+    setSeekedPromotionCheck(true);
   }
 
   const slidePiece = (movPiece, duration, ilegal) => {
@@ -450,10 +449,7 @@ function Board(props) {
     }
   };
 
-  if (promoted.length > 0 && checked.side === '') {
-    // if (clearedCheck) return;
-    // findPromotionCheck();
-  }
+  if (promoted.length > 0 && !seekedPromotionCheck) findPromotionCheck();
 
   return (
     <div onMouseUp={upHandler} onMouseMove={moveHandler} className="page">
