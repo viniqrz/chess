@@ -35,6 +35,7 @@ function Board(props) {
   const boardRef = useRef();
   const piecesRef = useRef();
   const moveSoundRef = useRef();
+  const gameRef = useRef();
 
   const getLegalMoves = useLegalMoves();
   const arrange = usePieces(map);
@@ -420,8 +421,14 @@ function Board(props) {
 
   const moveHandler = (e) => {
     if (!hold) return;
+
     const objLeft = {};
     const objTop = {};
+
+    const { left, right, top } = gameRef.current.getBoundingClientRect();
+
+    if (e.clientX <= left) return;
+    if (e.clientX >= right) return;
 
     objLeft[piece.name] = e.clientX - piece.element.offsetWidth / 2;
     objTop[piece.name] = e.clientY - piece.element.offsetHeight / 2;
@@ -429,20 +436,24 @@ function Board(props) {
     setLeft(objLeft);
     setTop(objTop);
 
-    if (e.target.parentNode.className.includes(piece.name.slice(0, -1))) {
-      e.target.parentNode.style.zIndex = 2;
-    }
+    // console.log(e.target.parentNode.style.left);
+    // console.log(e.target.parentNode.style.left);
+    // e.target.parentNode.style.left = e.clientX - piece.element.offsetWidth / 2;
+
+    if (e.target.parentNode.id === piece.name) e.target.parentNode.style.zIndex = 2;
 
     if (piece.legalMoves) {
-      const square = getSquareOfCursor(e);
       displayHint(piece.legalMoves, 1);
+      const square = getSquareOfCursor(e);
       if (square) getCoords(square, 1);
+      if (!square) setFinal([0, 0]);
     }
   };
 
   const upHandler = (e) => {
     if (!hold) return;
     setHold(false);
+    console.log('up');
     const square = getSquareOfCursor(e);
 
     piece.element.style.zIndex = 1;
@@ -459,7 +470,12 @@ function Board(props) {
   if (promoted.length > 0 && !seekedPromotionCheck) findPromotionCheck();
 
   return (
-    <div onMouseUp={upHandler} onMouseMove={moveHandler} className="page">
+    <div
+      onMouseUp={upHandler}
+      onMouseMove={moveHandler}
+      ref={gameRef}
+      className="page"
+    >
       <audio ref={moveSoundRef} src={moveSfx}></audio>
       <div
         className="board-container"
