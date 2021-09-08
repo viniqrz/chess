@@ -343,6 +343,8 @@ function Board(props) {
     }
   };
 
+  const arrayToIndex = (y, x) => y * 8 - (8 - [x]) - 1;
+
   const isCastle = (square, pieceImg) => {
     const [fY, fX] = final;
     let castleMove = false;
@@ -353,7 +355,6 @@ function Board(props) {
 
     if (!castleMove) return makeMove(square, pieceImg);
 
-    const arrayToIndex = (y, x) => y * 8 - (8 - [x]) - 1;
     let index;
     let squareIndex;
     let rookFinal;
@@ -449,23 +450,25 @@ function Board(props) {
       if (!square) setFinal([0, 0]);
     }
   };
-
-  const upHandler = (e) => {
+  
+  const dropPiece = (target) => {
     if (!hold) return;
     setHold(false);
-    console.log('up');
-    const square = getSquareOfCursor(e);
+
+    const square = boardRef.current.children[arrayToIndex(...final)];
 
     piece.element.style.zIndex = 1;
 
     displayHint(piece.legalMoves, 0);
 
     if (piece.name.includes('King')) {
-      isCastle(square, e.target);
+      isCastle(square, target);
     } else {
-      makeMove(square, e.target);
+      makeMove(square, target);
     }
-  };
+  }
+
+  const upHandler = (e) => dropPiece(e.target);
 
   if (promoted.length > 0 && !seekedPromotionCheck) findPromotionCheck();
 
