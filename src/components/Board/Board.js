@@ -8,6 +8,7 @@ import squares from '../../data/squares';
 import getFen from '../../utils/getFen';
 import getCastlePosition from '../../utils/getCastlePosition';
 import fenToNumber from '../../utils/fenToNumber';
+import isMovePromotion from '../../utils/isMovePromotion';
 
 import usePieces from './../../hooks/use-pieces';
 import useLegalMoves from './../../hooks/use-legal-moves';
@@ -60,48 +61,16 @@ function Board(props) {
     removeFromMap(piece.name);
     setIsPromoting('');
     setPromoted([...promoted, { name, index, side: piece.side }]);
-
+    
     const newMap = addToMap(final, name + index);
   
     setSeekedPromotionCheck(false);
-
-    setTimeout(() => {
-      arrange(newMap);
-    }, 100);
+    setTimeout(() => arrange(newMap), 100);
   };
 
   const checkForPromotion = (curPiece) => {
-    if (!curPiece.name.includes('Pawn')) return;
-
-    const [y] = final;
-
-    if (playerSide === 'white') {
-      if (curPiece.side === 'white') {
-        if (y === 1) {
-          displayPromotionMenu();
-        }
-      }
-
-      if (curPiece.side === 'black') {
-        if (y === 8) {
-          displayPromotionMenu();
-        }
-      }
-    }
-
-    if (playerSide === 'black') {
-      if (curPiece.side === 'white') {
-        if (y === 8) {
-          displayPromotionMenu();
-        }
-      }
-
-      if (curPiece.side === 'black') {
-        if (y === 1) {
-          displayPromotionMenu();
-        }
-      }
-    }
+    const isPromotion = isMovePromotion(curPiece, playerSide, final);
+    if (isPromotion) displayPromotionMenu();
   };
 
   const addToMap = (coords, name) => {
@@ -212,10 +181,6 @@ function Board(props) {
     setDefenders(defendersList.length === 0 ? [null] : defendersList);
   };
 
-  if (checked.side && defenders.length < 1) {
-    findCheckmate();
-  }
-
   const getCoords = (element, moment) => {
     const squaresArr = Array.from(boardRef.current.children);
     const index = squaresArr.findIndex((el) => el === element) + 1;
@@ -234,11 +199,11 @@ function Board(props) {
   };
 
   const isIlegal = (square) => {
-    const index = piece.legalMoves.findIndex(
+    const index = piece.legalMoves.some(
       (move) => move[0] === final[0] && move[1] === final[1]
     );
 
-    if (index === -1) return true;
+    if (!index) return true;
 
     const { left, top } = square.getBoundingClientRect();
     const pieces = [...piecesRef.current.children];
@@ -483,6 +448,7 @@ function Board(props) {
 
   const upHandler = (e) => dropPiece(e.target);
 
+  if (checked.side && defenders.length < 1) findCheckmate();
   if (promoted.length > 0 && !seekedPromotionCheck) findPromotionCheck();
 
   return (
