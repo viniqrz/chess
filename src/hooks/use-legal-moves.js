@@ -475,7 +475,6 @@ const useLegalMoves = () => {
               && map.whiteRook0.coords[1] === 1;
             isRightRookUntouched = map.whiteRook1.coords[0] === 8
             && map.whiteRook1.coords[1] === 8;
-            // console.log('1', movesArr2);
 
             if (!isLegalToLeft) {
               movesArr2 = movesArr2.filter(el => el[1] !== 3);
@@ -492,8 +491,6 @@ const useLegalMoves = () => {
                 movesArr2 = movesArr2.filter(el => el[1] !== 7);
               }
             }
-            
-            // console.log('2', movesArr2, isLeftRookUntouched, isRightRookUntouched);
           }
         }
 
@@ -554,7 +551,6 @@ const useLegalMoves = () => {
         }
 
         if (side === 'black') {
-          console.log(movesArr2);
           if (curY === 8 && curX === 4) {
             isLegalToLeft = movesArr2.some(el => el[0] === 8 && el[1] === 2);
             isLegalToRight = movesArr2.some(el => el[0] === 8 && el[1] === 7);
@@ -581,48 +577,6 @@ const useLegalMoves = () => {
           }
         }
       }
-
-
-      // if (curY === 8) {
-      //   let isLegalToLeft = false;
-      //   let isLegalToRight = false;
-
-      //   if (playerSide === 'white') {
-      //     if (!curX === 5) return;
-
-      //     filteredMovesArr.forEach((el) => {
-      //       if (!el[0] === curY) return; 
-      //       if (el[1] === curX - 1) isLegalToLeft = true;
-      //       if (el[1] === curX + 1) isLegalToRight = true;
-      //     });
-
-      //     if (isLegalToLeft) {
-            
-      //     }
-
-      //     if (isLegalToRight) {
-
-      //     }
-      //   }
-
-      //   if (playerSide === 'black') {
-      //     if (!curX === 4) return;
-            
-      //     filteredMovesArr.forEach((el) => {
-      //       if (!el[0] === curY) return;
-      //       if (el[1] === curX - 1) isLegalToLeft = true;
-      //       if (el[1] === curX + 1) isLegalToRight = true;
-      //     });
-
-      //     if (isLegalToLeft) {
-
-      //     }
-
-      //     if (isLegalToRight) {
-
-      //     }
-      //   }
-      // }
 
       return { legalMoves: movesArr2, guarded: movesArr, pinLines };
     }

@@ -4,7 +4,8 @@ import './Board.scss';
 import moveSfx from './../../sfx/moveSfx.wav';
 
 import getInitialMap from './../../data/getInitialMap';
-import squares from './../../squares';
+import squares from '../../data/squares';
+import getFen from '../../utils/getFen';
 
 import usePieces from './../../hooks/use-pieces';
 import useLegalMoves from './../../hooks/use-legal-moves';
@@ -23,7 +24,8 @@ function Board(props) {
   const [initial, setInitial] = useState({});
   const [final, setFinal] = useState([0, 0]);
   const [piece, setPiece] = useState({});
-  const [map, setMap] = useState(getInitialMap(props.side));
+  const [playerSide, setPlayerSide] = useState('white');
+  const [map, setMap] = useState(getInitialMap(playerSide));
   const [checked, setChecked] = useState({ side: '', line: '' });
   const [defenders, setDefenders] = useState([]);
   const [history, setHistory] = useState([]);
@@ -68,7 +70,7 @@ function Board(props) {
 
     const [y] = final;
 
-    if (props.side === 'white') {
+    if (playerSide === 'white') {
       if (curPiece.side === 'white') {
         if (y === 1) {
           displayPromotionMenu();
@@ -82,7 +84,7 @@ function Board(props) {
       }
     }
 
-    if (props.side === 'black') {
+    if (playerSide === 'black') {
       if (curPiece.side === 'white') {
         if (y === 8) {
           displayPromotionMenu();
@@ -99,7 +101,7 @@ function Board(props) {
 
   const addToMap = (coords, name) => {
     const { legalMoves, guarded, pinLines } = getLegalMoves(
-      props.side,
+      playerSide,
       name,
       coords,
       map
@@ -130,7 +132,7 @@ function Board(props) {
     };
     
     const { legalMoves, guarded, pinLines } = getLegalMoves(
-      props.side,
+      playerSide,
       curPiece,
       newMap[curPiece].coords,
       map
@@ -329,6 +331,8 @@ function Board(props) {
       updateMap(movPiece.parentNode.id, castle);
       updateHistory(movPiece.parentNode.id);
 
+      console.log(getFen(map));
+
       moveSoundRef.current.playbackRate = 1.5;
       moveSoundRef.current.play();
 
@@ -360,11 +364,11 @@ function Board(props) {
     let rookFinal;
 
     if (fX > initial.position[1]) {
-      index = props.side === 'white' ? '1' : '0';
+      index = playerSide === 'white' ? '1' : '0';
       squareIndex = arrayToIndex(fY, fX - 1);
       rookFinal = [fY, fX - 1];
     } else {
-      index = props.side === 'white' ? '0' : '1';
+      index = playerSide === 'white' ? '0' : '1';
       squareIndex = arrayToIndex(fY, fX + 1);
       rookFinal = [fY, fX + 1];
     }
@@ -412,7 +416,7 @@ function Board(props) {
 
       legalMoves = [defender.move];
     } else {
-      const kingObject = getLegalMoves(props.side, name, coords, map);
+      const kingObject = getLegalMoves(playerSide, name, coords, map);
       legalMoves = kingObject.legalMoves;
     }
 
@@ -438,10 +442,6 @@ function Board(props) {
 
     setLeft(objLeft);
     setTop(objTop);
-
-    // console.log(e.target.parentNode.style.left);
-    // console.log(e.target.parentNode.style.left);
-    // e.target.parentNode.style.left = e.clientX - piece.element.offsetWidth / 2;
 
     if (e.target.parentNode.id === piece.name) e.target.parentNode.style.zIndex = 2;
 
@@ -474,6 +474,15 @@ function Board(props) {
 
   if (promoted.length > 0 && !seekedPromotionCheck) findPromotionCheck();
 
+  const chooseSideHandler = (e) => {
+    const newSide = e.target.textContent.toLowerCase();
+    setPlayerSide(newSide);
+    setMap(getInitialMap(newSide));
+    arrange(getInitialMap(newSide));
+    setPiece({});
+    setInitial();
+  }
+
   return (
     <div
       onMouseUp={upHandler}
@@ -489,8 +498,8 @@ function Board(props) {
         {isPromoting && (
           <PromotionMenu onSelect={selectHandler} side={isPromoting} />
         )}
-        <UpperCoords side={props.side} />
-        <SideCoords side={props.side} />
+        <UpperCoords side={playerSide} />
+        <SideCoords side={playerSide} />
         <div ref={boardRef} className="board">
           {squares}
         </div>
@@ -503,6 +512,11 @@ function Board(props) {
           top={top}
           onClickDown={downHandler}
         />
+      </div>
+      <div>
+        <h2>Choose your side</h2>
+        <button onClick={ chooseSideHandler }>White</button>
+        <button onClick={ chooseSideHandler }>Black</button>
       </div>
       {checkmate && <h1>CHECKMATE!</h1>}
     </div>

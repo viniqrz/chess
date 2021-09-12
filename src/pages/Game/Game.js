@@ -5,14 +5,9 @@ import './Game.scss';
 import Board from '../../components/Board/Board';
 
 const Game = () => {
-  const [up, setUp] = useState(false);
-
-  const setUpTrue = () => setUp(true);
-  const setUpFalse = () => setUp(false);
-
   return (
-    <div onMouseUp={ setUpTrue } className="game-page">
-      <Board side="black" up={ up } switchUp={ setUpFalse } />
+    <div className="game-page">
+      <Board side="white"/>
     </div>
   );
 }
