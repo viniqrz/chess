@@ -1,9 +1,10 @@
 import './App.scss';
 
-import Board from './components/Board/Board.js';
+// import Board from './components/Board/Board.js';
+import Game from './pages/Game/Game';
 
 function App() {
-  return <Board side="white" />;
+  return <Game />;
 }
 
 export default App;

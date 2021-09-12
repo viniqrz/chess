@@ -222,7 +222,7 @@ const Pieces = (props) => {
         index={2}
         onClickDown={onClickDown}
       />
-      {/* <Pawn
+      <Pawn
         side="white"
         hold={hold}
         left={left.whitePawn3}
@@ -261,7 +261,7 @@ const Pieces = (props) => {
         top={top.whitePawn7}
         index={7}
         onClickDown={onClickDown}
-      /> */}
+      />
       <Pawn
         side="black"
         hold={hold}
@@ -284,6 +284,46 @@ const Pieces = (props) => {
         left={left.blackPawn2}
         top={top.blackPawn2}
         index={2}
+        onClickDown={onClickDown}
+      />
+      <Pawn
+        side="black"
+        hold={hold}
+        left={left.blackPawn3}
+        top={top.blackPawn3}
+        index={3}
+        onClickDown={onClickDown}
+      />
+      <Pawn
+        side="black"
+        hold={hold}
+        left={left.blackPawn4}
+        top={top.blackPawn4}
+        index={4}
+        onClickDown={onClickDown}
+      />
+      <Pawn
+        side="black"
+        hold={hold}
+        left={left.blackPawn5}
+        top={top.blackPawn5}
+        index={5}
+        onClickDown={onClickDown}
+      />
+      <Pawn
+        side="black"
+        hold={hold}
+        left={left.blackPawn6}
+        top={top.blackPawn6}
+        index={6}
+        onClickDown={onClickDown}
+      />
+      <Pawn
+        side="black"
+        hold={hold}
+        left={left.blackPawn7}
+        top={top.blackPawn7}
+        index={7}
         onClickDown={onClickDown}
       />
     </>

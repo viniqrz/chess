@@ -1,4 +1,4 @@
-const useBoard = (boardRef, piecesRef) => {
+const useBoard = (boardRef) => {
   const arrayToIndex = (y, x) => y * 8 - (8 - [x]) - 1;
 
   const getSquareOfCursor = (e) => {
@@ -26,22 +26,7 @@ const useBoard = (boardRef, piecesRef) => {
     );
   };
 
-  const bloom = (checkedSide) => {
-    [...piecesRef.current.children].find((el) =>
-      el.className.includes(checkedSide + 'King')
-    ).style.background =
-      'radial-gradient(circle, rgba(255,0,0,1) 0%, rgba(134,134,134,0) 100%)';
-  };
-
-  const clearBloom = (checkedSide) => {
-    const checkedKing = [...piecesRef.current.children].find((el) =>
-      el.className.includes(checkedSide + 'King')
-    );
-
-    checkedKing.style.background = 'none';
-  };
-
-  return [getSquareOfCursor, displayHint, bloom, clearBloom];
+  return [getSquareOfCursor, displayHint];
 }
 
 export default useBoard;

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 
 import './Board.scss';
 import moveSfx from './../../sfx/moveSfx.wav';
@@ -30,10 +30,12 @@ function Board(props) {
   const [checkmate, setCheckmate] = useState(false);
   const [promoted, setPromoted] = useState([]);
   const [isPromoting, setIsPromoting] = useState('');
+  const [seekedPromotionCheck, setSeekedPromotionCheck] = useState(true); 
 
   const boardRef = useRef();
   const piecesRef = useRef();
   const moveSoundRef = useRef();
+  const gameRef = useRef();
 
   const getLegalMoves = useLegalMoves();
   const arrange = usePieces(map);
@@ -42,9 +44,7 @@ function Board(props) {
 
   window.addEventListener('resize', () => arrange(map));
 
-  const displayPromotionMenu = () => {
-    setIsPromoting(piece.side);
-  };
+  const displayPromotionMenu = () => setIsPromoting(piece.side);
 
   const selectHandler = (selectedPiece) => {
     const name = selectedPiece;
@@ -55,26 +55,27 @@ function Board(props) {
     setPromoted([...promoted, { name, index, side: piece.side }]);
 
     const newMap = addToMap(final, name + index);
+  
+    setSeekedPromotionCheck(false);
 
     setTimeout(() => {
       arrange(newMap);
-      // console.log(piecesRef.current.children, newMap);
     }, 100);
   };
 
-  const checkForPromotion = () => {
-    if (!piece.name.includes('Pawn')) return;
+  const checkForPromotion = (curPiece) => {
+    if (!curPiece.name.includes('Pawn')) return;
 
     const [y] = final;
 
     if (props.side === 'white') {
-      if (piece.side === 'white') {
+      if (curPiece.side === 'white') {
         if (y === 1) {
           displayPromotionMenu();
         }
       }
 
-      if (piece.side === 'black') {
+      if (curPiece.side === 'black') {
         if (y === 8) {
           displayPromotionMenu();
         }
@@ -82,13 +83,13 @@ function Board(props) {
     }
 
     if (props.side === 'black') {
-      if (piece.side === 'white') {
+      if (curPiece.side === 'white') {
         if (y === 8) {
           displayPromotionMenu();
         }
       }
 
-      if (piece.side === 'black') {
+      if (curPiece.side === 'black') {
         if (y === 1) {
           displayPromotionMenu();
         }
@@ -119,11 +120,15 @@ function Board(props) {
     return newMap;
   };
 
-  const updateMap = (curPiece = piece.name) => {
+  const updateMap = (curPiece = piece.name, castle=false) => {
     const newMap = { ...map };
 
-    if (curPiece === piece.name) newMap[curPiece].coords = final;
-
+    if (curPiece === piece.name) {
+      newMap[curPiece].coords = final;
+    } else if (castle) {
+      newMap[curPiece].coords = castle;
+    };
+    
     const { legalMoves, guarded, pinLines } = getLegalMoves(
       props.side,
       curPiece,
@@ -254,9 +259,9 @@ function Board(props) {
     return ilegal;
   };
 
-  const isCheck = () => {
-    if (piece.name.includes('King')) return;
-    const kingSide = piece.name.includes('white') ? 'black' : 'white';
+  const isCheck = (pieceName) => {
+    if (pieceName.includes('King')) return;
+    const kingSide = pieceName.includes('white') ? 'black' : 'white';
     const [y, x] = map[kingSide + 'King'].coords;
 
     const pieces = Object.keys(map);
@@ -274,6 +279,14 @@ function Board(props) {
     });
   };
 
+  const findPromotionCheck = () => {
+    if (!history[history.length - 1].piece.includes('Pawn')) return;
+    if (!map[piece.name].coords[0] === 0) return;
+
+    isCheck(piece.name);
+    setSeekedPromotionCheck(true);
+  }
+
   const slidePiece = (movPiece, duration, ilegal) => {
     movPiece.parentNode.style.transition = 'all ' + duration + 'ms';
 
@@ -285,9 +298,9 @@ function Board(props) {
     }, duration + 20);
   };
 
-  const updateHistory = () => {
+  const updateHistory = (pieceName) => {
     const move = {
-      piece: piece.name,
+      piece: pieceName,
       initial: initial.position,
       final,
     };
@@ -295,7 +308,7 @@ function Board(props) {
     setHistory([...history, move]);
   };
 
-  const makeMove = (finalSquare, movPiece) => {
+  const makeMove = (finalSquare, movPiece, castle=false) => {
     let ilegal = true;
 
     if (finalSquare) {
@@ -313,8 +326,8 @@ function Board(props) {
       movPiece.parentNode.style.left = left + 'px';
       movPiece.parentNode.style.top = top + 'px';
 
-      updateMap();
-      updateHistory();
+      updateMap(movPiece.parentNode.id, castle);
+      updateHistory(movPiece.parentNode.id);
 
       moveSoundRef.current.playbackRate = 1.5;
       moveSoundRef.current.play();
@@ -325,10 +338,45 @@ function Board(props) {
         clearBloom(checked.side);
       }
 
-      isCheck();
-      checkForPromotion();
+      isCheck(movPiece.parentNode.id);
+      checkForPromotion(piece);
     }
   };
+
+  const arrayToIndex = (y, x) => y * 8 - (8 - [x]) - 1;
+
+  const isCastle = (square, pieceImg) => {
+    const [fY, fX] = final;
+    let castleMove = false;
+
+    piece.legalMoves.forEach(el => {
+      if (el[3] && el[0] === fY && el[1] === fX) castleMove = true;
+    });
+
+    if (!castleMove) return makeMove(square, pieceImg);
+
+    let index;
+    let squareIndex;
+    let rookFinal;
+
+    if (fX > initial.position[1]) {
+      index = props.side === 'white' ? '1' : '0';
+      squareIndex = arrayToIndex(fY, fX - 1);
+      rookFinal = [fY, fX - 1];
+    } else {
+      index = props.side === 'white' ? '0' : '1';
+      squareIndex = arrayToIndex(fY, fX + 1);
+      rookFinal = [fY, fX + 1];
+    }
+
+    const rookName = piece.side + 'Rook' + index;
+    const pieces = Array.from(piecesRef.current.children);
+    const rookImg= pieces.find((el) => el.id === rookName).children[0];
+    const rookSquare = boardRef.current.children[squareIndex];
+
+    makeMove(square, pieceImg);
+    makeMove(rookSquare, rookImg, rookFinal);
+  }
 
   const downHandler = (e, name, side) => {
     if (checkmate) return;
@@ -374,8 +422,14 @@ function Board(props) {
 
   const moveHandler = (e) => {
     if (!hold) return;
+
     const objLeft = {};
     const objTop = {};
+
+    const { left, right, top } = gameRef.current.getBoundingClientRect();
+
+    if (e.clientX <= left) return;
+    if (e.clientX >= right) return;
 
     objLeft[piece.name] = e.clientX - piece.element.offsetWidth / 2;
     objTop[piece.name] = e.clientY - piece.element.offsetHeight / 2;
@@ -383,30 +437,48 @@ function Board(props) {
     setLeft(objLeft);
     setTop(objTop);
 
-    if (e.target.parentNode.className.includes(piece.name.slice(0, -1))) {
-      e.target.parentNode.style.zIndex = 2;
-    }
+    // console.log(e.target.parentNode.style.left);
+    // console.log(e.target.parentNode.style.left);
+    // e.target.parentNode.style.left = e.clientX - piece.element.offsetWidth / 2;
+
+    if (e.target.parentNode.id === piece.name) e.target.parentNode.style.zIndex = 2;
 
     if (piece.legalMoves) {
-      const square = getSquareOfCursor(e);
       displayHint(piece.legalMoves, 1);
+      const square = getSquareOfCursor(e);
       if (square) getCoords(square, 1);
+      if (!square) setFinal([0, 0]);
     }
   };
-
-  const upHandler = (e) => {
+  
+  const dropPiece = (target) => {
     if (!hold) return;
     setHold(false);
-    const square = getSquareOfCursor(e);
+
+    const square = boardRef.current.children[arrayToIndex(...final)];
 
     piece.element.style.zIndex = 1;
 
     displayHint(piece.legalMoves, 0);
-    makeMove(square, e.target);
-  };
+
+    if (piece.name.includes('King')) {
+      isCastle(square, target);
+    } else {
+      makeMove(square, target);
+    }
+  }
+
+  const upHandler = (e) => dropPiece(e.target);
+
+  if (promoted.length > 0 && !seekedPromotionCheck) findPromotionCheck();
 
   return (
-    <div onMouseUp={upHandler} onMouseMove={moveHandler} className="page">
+    <div
+      onMouseUp={upHandler}
+      onMouseMove={moveHandler}
+      ref={gameRef}
+      className="page"
+    >
       <audio ref={moveSoundRef} src={moveSfx}></audio>
       <div
         className="board-container"

@@ -324,8 +324,8 @@ const useLegalMoves = () => {
     };
 
     if (curPiece.includes('King')) {
-      const pushMove = (y, x, line) => {
-        const possible = [y, x, line];
+      const pushMove = (y, x, line, castle) => {
+        const possible = [y, x, line, castle];
         let isEqual = false;
 
         if (y === curPosition[0] && x === curPosition[1]) {
@@ -337,15 +337,88 @@ const useLegalMoves = () => {
         }
       };
 
+      const [curY, curX] = curPosition;
+
       // King Moves
-      pushMove(curPosition[0] - 1, curPosition[1], '0');
-      pushMove(curPosition[0] - 1, curPosition[1] + 1, '45');
-      pushMove(curPosition[0], curPosition[1] + 1, '90');
-      pushMove(curPosition[0] + 1, curPosition[1] + 1, '135');
-      pushMove(curPosition[0] + 1, curPosition[1], '180');
-      pushMove(curPosition[0] + 1, curPosition[1] - 1, '225');
-      pushMove(curPosition[0], curPosition[1] - 1, '270');
-      pushMove(curPosition[0] - 1, curPosition[1] - 1, '315');
+      pushMove(curPosition[0] - 1, curPosition[1], '0', false);
+      pushMove(curPosition[0] - 1, curPosition[1] + 1, '45', false);
+      pushMove(curPosition[0], curPosition[1] + 1, '90', false);
+
+      if (playerSide === 'white') {
+        if (side === 'white') {
+          if (curY === 8 && curX === 5) {
+            movesArr.push([8, 7, '90', true]);
+          }
+        }
+
+        if (side === 'black') {
+          if (curY === 1 && curX === 5) {
+            movesArr.push([1, 7, '90', true]);
+          }
+        }
+      }
+
+      if (playerSide === 'black') {
+        if (curY === 8 && curX === 5) {
+          movesArr.push([8, 7, '90', true]);
+        }
+
+        if (curY === 8 && curX === 4) {
+          movesArr.push([8, 6, '90', true]);
+          movesArr.push([8, 7, '90', true]);
+        }
+
+        if (side === 'white') {
+          if (curY === 1 && curX === 4) {
+            movesArr.push([1, 6, '90', true]);
+            movesArr.push([1, 7, '90', true]);
+          }
+        }
+
+        if (side === 'black') {
+          if (curY === 8 && curX === 4 ) {
+            movesArr.push([8, 6, '90', true]);
+            movesArr.push([8, 7, '90', true]);
+          }
+        }
+      }
+     
+      pushMove(curPosition[0] + 1, curPosition[1] + 1, '135', false);
+      pushMove(curPosition[0] + 1, curPosition[1], '180', false);
+      pushMove(curPosition[0] + 1, curPosition[1] - 1, '225', false);
+      pushMove(curPosition[0], curPosition[1] - 1, '270', false);
+      
+      if (playerSide === 'white') {
+        if (side === 'white') {
+          if (curY === 8 && curX === 5) {
+            movesArr.push([8, 3, '270', true]);
+            movesArr.push([8, 2, '270', true]);
+          }
+        }
+
+        if (side === 'black') {
+          if (curY === 1 && curX === 5) {
+            movesArr.push([1, 3, '270', true]);
+            movesArr.push([1, 2, '270', true]);
+          }
+        }
+      }
+
+      if (playerSide === 'black') {
+        if (side === 'white') {
+          if (curY === 1 && curX === 4) {
+            movesArr.push([1, 2, '270', true]);
+          }
+        }
+
+        if (side === 'black') {
+          if (curY === 8 && curX === 4) {
+            movesArr.push([8, 2, '270', true]);
+          }
+        }
+      }
+
+      pushMove(curPosition[0] - 1, curPosition[1] - 1, '315', false);
 
       //King Possible Pin Lines
       let pinLines = [];
@@ -362,7 +435,7 @@ const useLegalMoves = () => {
       pinLines = checkPiecesAhead(pinLines, true);
 
       const pieces = Object.keys(map);
-      let filteredMovesArr = [];
+      let movesArr2 = [];
 
       movesArr.forEach((move) => {
         const [y, x] = move;
@@ -371,8 +444,6 @@ const useLegalMoves = () => {
 
         pieces.forEach((piece) => {
           if (!isLegal || piece.includes(side)) return;
-
-          
 
           const opponentMoves = piece.includes('King') || piece.includes('Pawn')
             ? map[piece].guarded
@@ -385,12 +456,174 @@ const useLegalMoves = () => {
           });
         });
 
-        if (isLegal) filteredMovesArr.push(move);
+        if (isLegal) movesArr2.push(move);
       });
 
-      filteredMovesArr = checkPiecesAhead(filteredMovesArr);
+      movesArr2 = checkPiecesAhead(movesArr2);
 
-      return { legalMoves: filteredMovesArr, guarded: movesArr, pinLines };
+      let isLegalToLeft = false;
+      let isLegalToRight = false;
+      let isLeftRookUntouched = false;
+      let isRightRookUntouched = false;
+
+      if (playerSide === 'white') {
+        if (side === 'white') {
+          if (curY === 8 && curX === 5) {
+            isLegalToLeft = movesArr2.some(el => el[0] === 8 && el[1] === 2);
+            isLegalToRight = movesArr2.some(el => el[0] === 8 && el[1] === 7);
+            isLeftRookUntouched = map.whiteRook0.coords[0] === 8
+              && map.whiteRook0.coords[1] === 1;
+            isRightRookUntouched = map.whiteRook1.coords[0] === 8
+            && map.whiteRook1.coords[1] === 8;
+            // console.log('1', movesArr2);
+
+            if (!isLegalToLeft) {
+              movesArr2 = movesArr2.filter(el => el[1] !== 3);
+            } else {
+              movesArr2 = movesArr2.filter(el => el[1] !== 2);
+
+              if (!isLeftRookUntouched) {
+                movesArr2 = movesArr2.filter(el => el[1] !== 3);
+              }
+            }
+
+            if (isLegalToRight) {
+              if (!isRightRookUntouched) {
+                movesArr2 = movesArr2.filter(el => el[1] !== 7);
+              }
+            }
+            
+            // console.log('2', movesArr2, isLeftRookUntouched, isRightRookUntouched);
+          }
+        }
+
+        if (side === 'black') {
+          if (curY === 1 && curX === 5) {
+            isLegalToLeft = movesArr2.some(el => el[0] === 1 && el[1] === 2);
+            isLegalToRight = movesArr2.some(el => el[0] === 1 && el[1] === 7);
+            isLeftRookUntouched = map.blackRook0.coords[0] === 1
+              && map.blackRook0.coords[1] === 1;
+            isRightRookUntouched = map.blackRook1.coords[0] === 1
+              && map.blackRook1.coords[1] === 8;
+
+            if (!isLegalToLeft) {
+              movesArr2 = movesArr2.filter(el => el[1] !== 3);
+            } else {
+              movesArr2 = movesArr2.filter(el => el[1] !== 2);
+
+              if (!isLeftRookUntouched) {
+                movesArr2 = movesArr2.filter(el => el[1] !== 3);
+              }
+            }
+
+            if (isLegalToRight) {
+              if (!isRightRookUntouched) {
+                movesArr2 = movesArr2.filter(el => el[1] !== 7);
+              }
+            }
+          }
+        }
+      }
+
+      if (playerSide === 'black') {
+        if (side === 'white') {
+          if (curY === 1 && curX === 4) {
+            isLegalToLeft = movesArr2.some(el => el[0] === 1 && el[1] === 2);
+            isLegalToRight = movesArr2.some(el => el[0] === 1 && el[1] === 7);
+            isLeftRookUntouched = map.whiteRook1.coords[0] === 1
+              && map.whiteRook1.coords[1] === 1;
+            isRightRookUntouched = map.whiteRook0.coords[0] === 1
+              && map.whiteRook0.coords[1] === 8;
+
+            if (!isLegalToRight) {
+              movesArr2 = movesArr2.filter(el => el[1] !== 6);
+            } else {
+              movesArr2 = movesArr2.filter(el => el[1] !== 7);
+
+              if (!isRightRookUntouched) {
+                movesArr2 = movesArr2.filter(el => el[1] !== 6);
+              }
+            }
+
+            if (isLegalToLeft) {
+              if (!isLeftRookUntouched) {
+                movesArr2 = movesArr2.filter(el => el[1] !== 2);
+              }
+            }
+          }
+        }
+
+        if (side === 'black') {
+          if (curY === 8 && curX === 4) {
+            isLegalToLeft = movesArr2.some(el => el[0] === 8 && el[1] === 2);
+            isLegalToRight = movesArr2.some(el => el[0] === 8 && el[1] === 7);
+            isLeftRookUntouched = map.blackRook1.coords[0] === 1
+              && map.blackRook1.coords[1] === 1;
+            isRightRookUntouched = map.blackRook0.coords[0] === 1
+              && map.blackRook0.coords[1] === 8;
+
+            if (!isLegalToRight) {
+              movesArr2 = movesArr2.filter(el => el[1] !== 6);
+            } else {
+              movesArr2 = movesArr2.filter(el => el[1] !== 7);
+
+              if (!isRightRookUntouched) {
+                movesArr2 = movesArr2.filter(el => el[1] !== 6);
+              }
+            }
+
+            if (isLegalToLeft) {
+              if (!isLeftRookUntouched) {
+                movesArr2 = movesArr2.filter(el => el[1] !== 2);
+              }
+            }
+          }
+        }
+      }
+
+
+      // if (curY === 8) {
+      //   let isLegalToLeft = false;
+      //   let isLegalToRight = false;
+
+      //   if (playerSide === 'white') {
+      //     if (!curX === 5) return;
+
+      //     filteredMovesArr.forEach((el) => {
+      //       if (!el[0] === curY) return; 
+      //       if (el[1] === curX - 1) isLegalToLeft = true;
+      //       if (el[1] === curX + 1) isLegalToRight = true;
+      //     });
+
+      //     if (isLegalToLeft) {
+            
+      //     }
+
+      //     if (isLegalToRight) {
+
+      //     }
+      //   }
+
+      //   if (playerSide === 'black') {
+      //     if (!curX === 4) return;
+            
+      //     filteredMovesArr.forEach((el) => {
+      //       if (!el[0] === curY) return;
+      //       if (el[1] === curX - 1) isLegalToLeft = true;
+      //       if (el[1] === curX + 1) isLegalToRight = true;
+      //     });
+
+      //     if (isLegalToLeft) {
+
+      //     }
+
+      //     if (isLegalToRight) {
+
+      //     }
+      //   }
+      // }
+
+      return { legalMoves: movesArr2, guarded: movesArr, pinLines };
     }
 
     if (curPiece.includes('Pawn')) {
