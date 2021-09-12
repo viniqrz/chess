@@ -6,6 +6,7 @@ import moveSfx from './../../sfx/moveSfx.wav';
 import getInitialMap from './../../data/getInitialMap';
 import squares from '../../data/squares';
 import getFen from '../../utils/getFen';
+import getCastlePosition from '../../utils/getCastlePosition';
 import fenToNumber from '../../utils/fenToNumber';
 
 import usePieces from './../../hooks/use-pieces';
@@ -48,6 +49,9 @@ function Board(props) {
   window.addEventListener('resize', () => arrange(map));
 
   const displayPromotionMenu = () => setIsPromoting(piece.side);
+
+  const elevatePieceImg = (el) => el.style.zIndex = 2;
+  const lowerPieceImg = (el) => el.style.zIndex = 1;
 
   const selectHandler = (selectedPiece) => {
     const name = selectedPiece;
@@ -374,19 +378,7 @@ function Board(props) {
 
     if (!castleMove) return makeMove(square, pieceImg);
 
-    let index;
-    let squareIndex;
-    let rookFinal;
-
-    if (fX > initial.position[1]) {
-      index = playerSide === 'white' ? '1' : '0';
-      squareIndex = arrayToIndex(fY, fX - 1);
-      rookFinal = [fY, fX - 1];
-    } else {
-      index = playerSide === 'white' ? '0' : '1';
-      squareIndex = arrayToIndex(fY, fX + 1);
-      rookFinal = [fY, fX + 1];
-    }
+    const [index, squareIndex, rookFinal] = getCastlePosition(final, initial, playerSide);
 
     const rookName = piece.side + 'Rook' + index;
     const pieces = Array.from(piecesRef.current.children);
@@ -428,7 +420,6 @@ function Board(props) {
       if (!defenders.some((el) => el.name === name)) return;
 
       const defender = defenders.find((el) => el.name === name);
-
       legalMoves = [defender.move];
     } else {
       const kingObject = getLegalMoves(playerSide, name, coords, map);
@@ -444,7 +435,6 @@ function Board(props) {
 
     const objLeft = {};
     const objTop = {};
-
     const { left, right, top, bottom } = gameRef.current.getBoundingClientRect();
 
     if (e.clientX <= left) return dropPiece(e.target);
@@ -458,7 +448,7 @@ function Board(props) {
     setLeft(objLeft);
     setTop(objTop);
 
-    if (e.target.parentNode.id === piece.name) e.target.parentNode.style.zIndex = 2;
+    if (e.target.parentNode.id === piece.name) elevatePieceImg(piece.element);
 
     if (piece.legalMoves) {
       displayHint(piece.legalMoves, 1);
@@ -467,27 +457,20 @@ function Board(props) {
       if (!square) setFinal([0, 0]);
     }
   };
-  
+
   const dropPiece = (target) => {
     if (!hold) return;
-    setHold(false);
-
+    
     const square = boardRef.current.children[arrayToIndex(...final)];
-
-    piece.element.style.zIndex = 1;
-
+    const isKing = piece.name.includes('King');
+    
+    lowerPieceImg(piece.element);
+    setHold(false);
     displayHint(piece.legalMoves, 0);
 
-    if (piece.name.includes('King')) {
-      isCastle(square, target);
-    } else {
-      makeMove(square, target);
-    }
+    if (isKing) isCastle(square, target);
+    if (!isKing) makeMove(square, target);    
   }
-
-  const upHandler = (e) => dropPiece(e.target);
-
-  if (promoted.length > 0 && !seekedPromotionCheck) findPromotionCheck();
 
   const chooseSideHandler = (e) => {
     const newSide = e.target.textContent.toLowerCase();
@@ -497,6 +480,10 @@ function Board(props) {
     setPiece({});
     setInitial();
   }
+
+  const upHandler = (e) => dropPiece(e.target);
+
+  if (promoted.length > 0 && !seekedPromotionCheck) findPromotionCheck();
 
   return (
     <div
