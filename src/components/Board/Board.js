@@ -6,6 +6,7 @@ import moveSfx from './../../sfx/moveSfx.wav';
 import getInitialMap from './../../data/getInitialMap';
 import squares from '../../data/squares';
 import getFen from '../../utils/getFen';
+import fenToNumber from '../../utils/fenToNumber';
 
 import usePieces from './../../hooks/use-pieces';
 import useLegalMoves from './../../hooks/use-legal-moves';
@@ -310,6 +311,20 @@ function Board(props) {
     setHistory([...history, move]);
   };
 
+  const fetchEngineMove = () => {
+    const oppSide = piece.side === 'white' ? 'b' : 'w';
+    const fenStr = getFen(map, playerSide) + ' ' + oppSide;
+
+    fetch('https://chess.apurn.com/nextmove', {
+      method: 'POST',
+      body: fenStr,
+    })
+      .then(res => res.text())
+      .then(data => { 
+        const [initial, final] = fenToNumber(data, playerSide);
+      });
+  }
+
   const makeMove = (finalSquare, movPiece, castle=false) => {
     let ilegal = true;
 
@@ -331,8 +346,6 @@ function Board(props) {
       updateMap(movPiece.parentNode.id, castle);
       updateHistory(movPiece.parentNode.id);
 
-      console.log(getFen(map));
-
       moveSoundRef.current.playbackRate = 1.5;
       moveSoundRef.current.play();
 
@@ -344,6 +357,8 @@ function Board(props) {
 
       isCheck(movPiece.parentNode.id);
       checkForPromotion(piece);
+
+      fetchEngineMove();
     }
   };
 

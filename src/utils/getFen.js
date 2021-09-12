@@ -1,4 +1,4 @@
-const getFen = (map) => {
+const getFen = (map, playerSide) => {
   const obj = {};
 
   // IMPLEMENT FUNCTION TO INVERT THE BLACK PLAYER MAP
@@ -12,13 +12,18 @@ const getFen = (map) => {
 
   Object.keys(map).forEach((piece) => {
     const { coords } = map[piece];
-    const [y, x] = coords;
+    let [y, x] = coords;
 
     if (y === 0) return;
 
     let letter = piece[5];
     if (piece.includes('Knight')) letter = 'N';
     if (piece.includes('black')) letter = letter.toLowerCase();
+
+    if (playerSide === 'black') {
+      y = (4.5 - y) * 2 + y;
+      x = (4.5 - x) * 2 + x;
+    }
 
     obj[y][x] = letter; 
   });
