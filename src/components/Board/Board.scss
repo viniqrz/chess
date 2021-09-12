@@ -4,15 +4,15 @@
   box-sizing: border-box;
 }
 
-.page {
+.game-container {
   text-align: center;
-  height: 100vh;
+  height: fit-content;
   display: flex;
   justify-content: center;
   align-items: center;
   background: orange;
   margin: 0 auto;
-  width: 50%;
+  width: fit-content;
 }
 
 .board-container {

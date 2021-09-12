@@ -426,10 +426,12 @@ function Board(props) {
     const objLeft = {};
     const objTop = {};
 
-    const { left, right, top } = gameRef.current.getBoundingClientRect();
+    const { left, right, top, bottom } = gameRef.current.getBoundingClientRect();
 
-    if (e.clientX <= left) return;
-    if (e.clientX >= right) return;
+    if (e.clientX <= left) return dropPiece(e.target);
+    if (e.clientX >= right) return dropPiece(e.target);
+    if (e.clientY >= bottom) return dropPiece(e.target);
+    if (e.clientY <= top) return dropPiece(e.target);
 
     objLeft[piece.name] = e.clientX - piece.element.offsetWidth / 2;
     objTop[piece.name] = e.clientY - piece.element.offsetHeight / 2;
@@ -477,7 +479,7 @@ function Board(props) {
       onMouseUp={upHandler}
       onMouseMove={moveHandler}
       ref={gameRef}
-      className="page"
+      className="game-container"
     >
       <audio ref={moveSoundRef} src={moveSfx}></audio>
       <div
