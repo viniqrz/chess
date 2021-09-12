@@ -12,7 +12,7 @@ const Game = () => {
 
   return (
     <div onMouseUp={ setUpTrue } className="game-page">
-      <Board side="white" up={ up } switchUp={ setUpFalse } />
+      <Board side="black" up={ up } switchUp={ setUpFalse } />
     </div>
   );
 }

@@ -554,12 +554,13 @@ const useLegalMoves = () => {
         }
 
         if (side === 'black') {
+          console.log(movesArr2);
           if (curY === 8 && curX === 4) {
             isLegalToLeft = movesArr2.some(el => el[0] === 8 && el[1] === 2);
             isLegalToRight = movesArr2.some(el => el[0] === 8 && el[1] === 7);
-            isLeftRookUntouched = map.blackRook1.coords[0] === 1
+            isLeftRookUntouched = map.blackRook1.coords[0] === 8
               && map.blackRook1.coords[1] === 1;
-            isRightRookUntouched = map.blackRook0.coords[0] === 1
+            isRightRookUntouched = map.blackRook0.coords[0] === 8
               && map.blackRook0.coords[1] === 8;
 
             if (!isLegalToRight) {
