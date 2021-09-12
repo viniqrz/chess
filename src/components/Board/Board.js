@@ -58,7 +58,7 @@ function Board(props) {
 
     setTimeout(() => {
       arrange(newMap);
-      console.log(piecesRef.current.children, newMap);
+      // console.log(piecesRef.current.children, newMap);
     }, 100);
   };
 
@@ -267,7 +267,6 @@ function Board(props) {
 
       legalMoves.forEach((move) => {
         if (move[0] === y && move[1] === x) {
-          console.log('-', map);
           setChecked({ side: kingSide, line: move[2] || '' });
           bloom(kingSide);
         }
