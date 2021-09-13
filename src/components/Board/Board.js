@@ -53,6 +53,7 @@ function Board(props) {
 
   const elevatePieceImg = (el) => el.style.zIndex = 2;
   const lowerPieceImg = (el) => el.style.zIndex = 1;
+  const arrayToIndex = (y, x) => y * 8 - (8 - [x]) - 1;
 
   const selectHandler = (selectedPiece) => {
     const name = selectedPiece;
@@ -198,24 +199,25 @@ function Board(props) {
     return curPosition;
   };
 
-  const isIlegal = (square) => {
-    const index = piece.legalMoves.some(
+  const isIlegal = (square, pieceName) => {
+    const move = piece.legalMoves.some(
       (move) => move[0] === final[0] && move[1] === final[1]
     );
 
-    if (!index) return true;
+    if (!move) return true;
 
     const { left, top } = square.getBoundingClientRect();
     const pieces = [...piecesRef.current.children];
+    const allySide = pieceName.slice(0, 5);
 
     let ilegal = false;
 
     pieces.forEach((el) => {
       const { left: elLeft, top: elTop } = el.getBoundingClientRect();
 
-      if (el.className.includes(piece.name)) return;
+      if (el.className.includes(pieceName)) return;
 
-      if (el.className.includes(piece.side)) {
+      if (el.className.includes(allySide)) {
         if (elLeft === left && elTop === top) {
           ilegal = true;
         }
@@ -270,7 +272,7 @@ function Board(props) {
     }, duration + 20);
   };
 
-  const updateHistory = (pieceName) => {
+  const updateHistory = (pieceName, initSquare) => {
     const move = {
       piece: pieceName,
       initial: initial.position,
@@ -291,20 +293,41 @@ function Board(props) {
       .then(res => res.text())
       .then(data => { 
         const [initial, final] = fenToNumber(data, playerSide);
+        const initIndex = arrayToIndex(...initial);
+        const finalIndex = arrayToIndex(...final);
+        const [y, x] = initial;
+        
+        const squares = Array.from(boardRef.current.children);
+        const pieces = Array.from(piecesRef.current.children);
+        const pieceNames = Object.keys(map);
+
+        let name = '';
+
+        pieceNames.forEach((el) => { 
+          const [elY, elX] = map[el].coords;
+          if (elY === y && elX === x) name = el;
+        });
+
+        const img = pieces.find((el) => el.id === name ).children[0];
+        const initSquare = squares[initIndex];
+        const finalSquare = squares[finalIndex];
+
+        makeMove(initSquare, finalSquare, img, final);
       });
   }
 
-  const makeMove = (finalSquare, movPiece, castle=false) => {
+  const makeMove = (initSquare, finalSquare, movPiece, castle=false) => {
+    const pieceName = movPiece.parentNode.id;
     let ilegal = true;
 
     if (finalSquare) {
-      ilegal = isIlegal(finalSquare);
+      ilegal = isIlegal(finalSquare, pieceName);
     }
 
     slidePiece(movPiece, 100, ilegal);
 
     if (ilegal) {
-      const { left, top } = initial.square.getBoundingClientRect();
+      const { left, top } = initSquare.getBoundingClientRect();
       movPiece.parentNode.style.left = left + 'px';
       movPiece.parentNode.style.top = top + 'px';
     } else {
@@ -312,8 +335,8 @@ function Board(props) {
       movPiece.parentNode.style.left = left + 'px';
       movPiece.parentNode.style.top = top + 'px';
 
-      updateMap(movPiece.parentNode.id, castle);
-      updateHistory(movPiece.parentNode.id);
+      updateMap(pieceName, castle);
+      updateHistory(pieceName);
 
       moveSoundRef.current.playbackRate = 1.5;
       moveSoundRef.current.play();
@@ -324,16 +347,14 @@ function Board(props) {
         clearBloom(checked.side);
       }
 
-      isCheck(movPiece.parentNode.id);
+      isCheck(pieceName);
       checkForPromotion(piece);
 
-      fetchEngineMove();
+      if (pieceName.includes(playerSide)) fetchEngineMove();
     }
   };
 
-  const arrayToIndex = (y, x) => y * 8 - (8 - [x]) - 1;
-
-  const isCastle = (square, pieceImg) => {
+  const isCastle = (square, kingImg) => {
     const [fY, fX] = final;
     let castleMove = false;
 
@@ -341,7 +362,7 @@ function Board(props) {
       if (el[3] && el[0] === fY && el[1] === fX) castleMove = true;
     });
 
-    if (!castleMove) return makeMove(square, pieceImg);
+    if (!castleMove) return makeMove(initial.square, square, kingImg);
 
     const [index, squareIndex, rookFinal] = getCastlePosition(final, initial, playerSide);
 
@@ -350,8 +371,8 @@ function Board(props) {
     const rookImg= pieces.find((el) => el.id === rookName).children[0];
     const rookSquare = boardRef.current.children[squareIndex];
 
-    makeMove(square, pieceImg);
-    makeMove(rookSquare, rookImg, rookFinal);
+    makeMove(initial.square, square, kingImg);
+    makeMove(initial.square, rookSquare, rookImg, rookFinal);
   }
 
   const downHandler = (e, name, side) => {
@@ -434,7 +455,7 @@ function Board(props) {
     displayHint(piece.legalMoves, 0);
 
     if (isKing) isCastle(square, target);
-    if (!isKing) makeMove(square, target);    
+    if (!isKing) makeMove(initial.square, square, target);    
   }
 
   const chooseSideHandler = (e) => {
@@ -444,6 +465,7 @@ function Board(props) {
     arrange(getInitialMap(newSide));
     setPiece({});
     setInitial();
+    [...piecesRef.current.children].forEach((el) => el.style.display = 'block');
   }
 
   const upHandler = (e) => dropPiece(e.target);

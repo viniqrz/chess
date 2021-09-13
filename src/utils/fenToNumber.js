@@ -7,8 +7,6 @@ const fenToNumber = (data, playerSide) => {
   let initial = [];
   let final = [];
 
-  console.log(fenYArray);
-
   const pushYToCoords = (c, arr) => {
     if (playerSide === 'white') arr.push(reverseCoords(c));
     if (playerSide === 'black') arr.push(c);
