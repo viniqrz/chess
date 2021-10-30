@@ -9,6 +9,7 @@ import getFen from '../../utils/getFen';
 import getCastlePosition from '../../utils/getCastlePosition';
 import fenToNumber from '../../utils/fenToNumber';
 import isMovePromotion from '../../utils/isMovePromotion';
+import getEngineMoveSquares from '../../utils/getEngineMovesSquares';
 
 import usePieces from './../../hooks/use-pieces';
 import useLegalMoves from './../../hooks/use-legal-moves';
@@ -19,6 +20,8 @@ import Pieces from './../Pieces/Pieces.js';
 import SideCoords from './../SideCoords/SideCoords';
 import UpperCoords from './../UpperCoords/UpperCoords';
 import PromotionMenu from './../PromotionMenu/PromotionMenu';
+import fetchEngineAPI from '../../services/api';
+import generatePieces from '../../utils/generatePieces';
 
 function Board(props) {
   const [hold, setHold] = useState(false);
@@ -35,7 +38,8 @@ function Board(props) {
   const [checkmate, setCheckmate] = useState(false);
   const [promoted, setPromoted] = useState([]);
   const [isPromoting, setIsPromoting] = useState('');
-  const [seekedPromotionCheck, setSeekedPromotionCheck] = useState(true); 
+  const [seekedPromotionCheck, setSeekedPromotionCheck] = useState(true);
+  const [turn, setTurn] = useState(true);
 
   const boardRef = useRef();
   const piecesRef = useRef();
@@ -51,8 +55,8 @@ function Board(props) {
 
   const displayPromotionMenu = () => setIsPromoting(piece.side);
 
-  const elevatePieceImg = (el) => el.style.zIndex = 2;
-  const lowerPieceImg = (el) => el.style.zIndex = 1;
+  const elevatePieceImg = (el) => (el.style.zIndex = 2);
+  const lowerPieceImg = (el) => (el.style.zIndex = 1);
   const arrayToIndex = (y, x) => y * 8 - (8 - [x]) - 1;
 
   const selectHandler = (selectedPiece) => {
@@ -62,9 +66,9 @@ function Board(props) {
     removeFromMap(piece.name);
     setIsPromoting('');
     setPromoted([...promoted, { name, index, side: piece.side }]);
-    
+
     const newMap = addToMap(final, name + index);
-  
+
     setSeekedPromotionCheck(false);
     setTimeout(() => arrange(newMap), 100);
   };
@@ -97,15 +101,15 @@ function Board(props) {
     return newMap;
   };
 
-  const updateMap = (curPiece = piece.name, castle=false) => {
+  const updateMap = (curPiece = piece.name, castle = false) => {
     const newMap = { ...map };
 
     if (curPiece === piece.name) {
       newMap[curPiece].coords = final;
     } else if (castle) {
       newMap[curPiece].coords = castle;
-    };
-    
+    }
+
     const { legalMoves, guarded, pinLines } = getLegalMoves(
       playerSide,
       curPiece,
@@ -235,8 +239,12 @@ function Board(props) {
 
   const isCheck = (pieceName) => {
     if (pieceName.includes('King')) return;
+
     const kingSide = pieceName.includes('white') ? 'black' : 'white';
+
     const [y, x] = map[kingSide + 'King'].coords;
+
+    let isCheck = false;
 
     const pieces = Object.keys(map);
     pieces.forEach((pieceName) => {
@@ -248,9 +256,12 @@ function Board(props) {
         if (move[0] === y && move[1] === x) {
           setChecked({ side: kingSide, line: move[2] || '' });
           bloom(kingSide);
+          isCheck = true;
         }
       });
     });
+
+    return isCheck;
   };
 
   const findPromotionCheck = () => {
@@ -259,7 +270,7 @@ function Board(props) {
 
     isCheck(piece.name);
     setSeekedPromotionCheck(true);
-  }
+  };
 
   const slidePiece = (movPiece, duration, ilegal) => {
     movPiece.parentNode.style.transition = 'all ' + duration + 'ms';
@@ -282,41 +293,41 @@ function Board(props) {
     setHistory([...history, move]);
   };
 
-  const fetchEngineMove = () => {
+  const fetchEngineMove = async (check) => {
+    setTurn(false);
+
+    const squares = Array.from(boardRef.current.children);
+    const pieces = Array.from(piecesRef.current.children);
+
     const oppSide = piece.side === 'white' ? 'b' : 'w';
     const fenStr = getFen(map, playerSide) + ' ' + oppSide;
 
-    fetch('https://chess.apurn.com/nextmove', {
-      method: 'POST',
-      body: fenStr,
-    })
-      .then(res => res.text())
-      .then(data => { 
-        const [initial, final] = fenToNumber(data, playerSide);
-        const initIndex = arrayToIndex(...initial);
-        const finalIndex = arrayToIndex(...final);
-        const [y, x] = initial;
-        
-        const squares = Array.from(boardRef.current.children);
-        const pieces = Array.from(piecesRef.current.children);
-        const pieceNames = Object.keys(map);
+    const data = await fetchEngineAPI(fenStr);
 
-        let name = '';
+    const [initial, final] = fenToNumber(data, playerSide);
+    const [y, x] = initial;
+    const pieceNames = Object.keys(map);
 
-        pieceNames.forEach((el) => { 
-          const [elY, elX] = map[el].coords;
-          if (elY === y && elX === x) name = el;
-        });
+    let name = '';
 
-        const img = pieces.find((el) => el.id === name ).children[0];
-        const initSquare = squares[initIndex];
-        const finalSquare = squares[finalIndex];
+    const engineSquares = getEngineMoveSquares(squares, initial, final);
 
-        makeMove(initSquare, finalSquare, img, final);
-      });
-  }
+    pieceNames.forEach((el) => {
+      const [elY, elX] = map[el].coords;
+      if (elY === y && elX === x) name = el;
+    });
 
-  const makeMove = (initSquare, finalSquare, movPiece, castle=false) => {
+    const img = pieces.find((el) => el.id === name).children[0];
+
+    setTimeout(() => {
+      makeMove(engineSquares, img, final, check, false, check);
+      setTurn(true);
+    }, 1000);
+  };
+
+  const makeMove = (squares, movPiece, castle = false, botOnCheck = false) => {
+    const [initSquare, finalSquare] = squares;
+
     const pieceName = movPiece.parentNode.id;
     let ilegal = true;
 
@@ -341,16 +352,16 @@ function Board(props) {
       moveSoundRef.current.playbackRate = 1.5;
       moveSoundRef.current.play();
 
-      if (checked.side && piece.name.includes(checked.side)) {
+      if (botOnCheck || (checked.side && pieceName.includes(checked.side))) {
         setChecked({ side: '', line: '' });
         setDefenders([]);
-        clearBloom(checked.side);
+        clearBloom();
       }
 
-      isCheck(pieceName);
+      const check = isCheck(pieceName);
       checkForPromotion(piece);
 
-      if (pieceName.includes(playerSide)) fetchEngineMove();
+      if (pieceName.includes(playerSide)) fetchEngineMove(check);
     }
   };
 
@@ -358,27 +369,31 @@ function Board(props) {
     const [fY, fX] = final;
     let castleMove = false;
 
-    piece.legalMoves.forEach(el => {
+    piece.legalMoves.forEach((el) => {
       if (el[3] && el[0] === fY && el[1] === fX) castleMove = true;
     });
 
-    if (!castleMove) return makeMove(initial.square, square, kingImg);
+    if (!castleMove) return makeMove([initial.square, square], kingImg);
 
-    const [index, squareIndex, rookFinal] = getCastlePosition(final, initial, playerSide);
+    const [index, squareIndex, rookFinal] = getCastlePosition(
+      final,
+      initial,
+      playerSide
+    );
 
     const rookName = piece.side + 'Rook' + index;
     const pieces = Array.from(piecesRef.current.children);
-    const rookImg= pieces.find((el) => el.id === rookName).children[0];
+    const rookImg = pieces.find((el) => el.id === rookName).children[0];
     const rookSquare = boardRef.current.children[squareIndex];
 
-    makeMove(initial.square, square, kingImg);
-    makeMove(initial.square, rookSquare, rookImg, rookFinal);
-  }
+    makeMove([initial.square, square], kingImg);
+    makeMove([initial.square, rookSquare], rookImg, rookFinal);
+  };
 
   const downHandler = (e, name, side) => {
-    if (checkmate) return;
+    if (checkmate || !name.includes(playerSide) || !turn) return;
     if (checked.side && name.includes(checked.side + 'King')) {
-      clearBloom(checked.side);
+      clearBloom();
     }
 
     const square = getSquareOfCursor(e);
@@ -421,7 +436,8 @@ function Board(props) {
 
     const objLeft = {};
     const objTop = {};
-    const { left, right, top, bottom } = gameRef.current.getBoundingClientRect();
+    const { left, right, top, bottom } =
+      gameRef.current.getBoundingClientRect();
 
     if (e.clientX <= left) return dropPiece(e.target);
     if (e.clientX >= right) return dropPiece(e.target);
@@ -446,27 +462,34 @@ function Board(props) {
 
   const dropPiece = (target) => {
     if (!hold) return;
-    
+
     const square = boardRef.current.children[arrayToIndex(...final)];
     const isKing = piece.name.includes('King');
-    
+
     lowerPieceImg(piece.element);
     setHold(false);
     displayHint(piece.legalMoves, 0);
 
     if (isKing) isCastle(square, target);
-    if (!isKing) makeMove(initial.square, square, target);    
-  }
+    if (!isKing) makeMove([initial.square, square], target);
+  };
 
-  const chooseSideHandler = (e) => {
-    const newSide = e.target.textContent.toLowerCase();
+  const reset = (newSide) => {
     setPlayerSide(newSide);
     setMap(getInitialMap(newSide));
     arrange(getInitialMap(newSide));
     setPiece({});
     setInitial();
-    [...piecesRef.current.children].forEach((el) => el.style.display = 'block');
-  }
+    clearBloom();
+  };
+
+  const chooseSideHandler = (e) => {
+    const newSide = e.target.textContent.toLowerCase();
+
+    reset(newSide);
+
+    generatePieces();
+  };
 
   const upHandler = (e) => dropPiece(e.target);
 
@@ -478,37 +501,41 @@ function Board(props) {
       onMouseUp={upHandler}
       onMouseMove={moveHandler}
       ref={gameRef}
-      className="game-container"
+      className="game-page-container"
     >
       <audio ref={moveSoundRef} src={moveSfx}></audio>
-      <div
-        className="board-container"
-        onContextMenu={(e) => e.preventDefault()}
-      >
-        {isPromoting && (
-          <PromotionMenu onSelect={selectHandler} side={isPromoting} />
-        )}
-        <UpperCoords side={playerSide} />
-        <SideCoords side={playerSide} />
-        <div ref={boardRef} className="board">
-          {squares}
+      <div className="game-container">
+        <div
+          className="board-container"
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          {isPromoting && (
+            <PromotionMenu onSelect={selectHandler} side={isPromoting} />
+          )}
+          <UpperCoords side={playerSide} />
+          <SideCoords side={playerSide} />
+          <div ref={boardRef} className="board">
+            {squares}
+          </div>
+        </div>
+        <div ref={piecesRef} className="pieces">
+          <Pieces
+            promoted={promoted}
+            hold={hold}
+            left={left}
+            top={top}
+            onClickDown={downHandler}
+          />
         </div>
       </div>
-      <div ref={piecesRef} className="pieces">
-        <Pieces
-          promoted={promoted}
-          hold={hold}
-          left={left}
-          top={top}
-          onClickDown={downHandler}
-        />
+      <div className="side-menu-container">
+        <div className="side-menu">
+          <h2>Choose your side</h2>
+          <button onClick={chooseSideHandler}>White</button>
+          <button onClick={chooseSideHandler}>Black</button>
+        </div>
       </div>
-      <div>
-        <h2>Choose your side</h2>
-        <button onClick={ chooseSideHandler }>White</button>
-        <button onClick={ chooseSideHandler }>Black</button>
-      </div>
-      {checkmate && <h1>CHECKMATE!</h1>}
+      {checkmate && <h1 className="checkmate">CHECKMATE!</h1>}
     </div>
   );
 }
